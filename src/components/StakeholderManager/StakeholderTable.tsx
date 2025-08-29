@@ -35,6 +35,7 @@ export function StakeholderTable({
 }: StakeholderTableProps) {
   const [sortField, setSortField] = React.useState<SortField | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
+  const [lastSelectedIndex, setLastSelectedIndex] = React.useState<number | null>(null)
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -62,12 +63,39 @@ export function StakeholderTable({
     }
   }
 
-  const handleSelectStakeholder = (stakeholderId: string, checked: boolean) => {
-    if (checked) {
-      onSelectionChange([...selectedStakeholders, stakeholderId])
+  const handleSelectStakeholder = (stakeholderId: string, checked: boolean, event?: React.MouseEvent) => {
+    const currentIndex = sortedStakeholders.findIndex(s => s.id === stakeholderId)
+    
+    // Check if shift key is pressed and we have a previous selection
+    if (event?.shiftKey && lastSelectedIndex !== null && currentIndex !== -1) {
+      const startIndex = Math.min(lastSelectedIndex, currentIndex)
+      const endIndex = Math.max(lastSelectedIndex, currentIndex)
+      
+      // Get all stakeholder IDs in the range
+      const rangeStakeholderIds = sortedStakeholders
+        .slice(startIndex, endIndex + 1)
+        .map(s => s.id)
+      
+      // If the current checkbox is being checked, select all in range
+      if (checked) {
+        const newSelection = [...new Set([...selectedStakeholders, ...rangeStakeholderIds])]
+        onSelectionChange(newSelection)
+      } else {
+        // If unchecking, remove all in range
+        const newSelection = selectedStakeholders.filter(id => !rangeStakeholderIds.includes(id))
+        onSelectionChange(newSelection)
+      }
     } else {
-      onSelectionChange(selectedStakeholders.filter(id => id !== stakeholderId))
+      // Normal single selection
+      if (checked) {
+        onSelectionChange([...selectedStakeholders, stakeholderId])
+      } else {
+        onSelectionChange(selectedStakeholders.filter(id => id !== stakeholderId))
+      }
     }
+    
+    // Update the last selected index for future shift-clicks
+    setLastSelectedIndex(currentIndex)
   }
 
   const handleBulkDelete = () => {
@@ -149,6 +177,11 @@ export function StakeholderTable({
 
   return (
     <div className="space-y-4">
+      {/* Shift-click hint */}
+      <div className="text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-md">
+        💡 <strong>Tip:</strong> Hold SHIFT and click checkboxes to select multiple rows at once
+      </div>
+      
       {/* Bulk Actions */}
       {selectedStakeholders.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -258,9 +291,10 @@ export function StakeholderTable({
                     <input
                       type="checkbox"
                       checked={isSelected}
-                      onChange={(e) => {
+                      onClick={(e) => {
                         e.stopPropagation()
-                        handleSelectStakeholder(stakeholder.id, e.target.checked)
+                        const newCheckedState = !isSelected
+                        handleSelectStakeholder(stakeholder.id, newCheckedState, e)
                       }}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
