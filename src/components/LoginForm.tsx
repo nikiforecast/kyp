@@ -502,14 +502,32 @@ export function LoginForm() {
               </div>
             )}
 
-            
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                isSignUp ? 'Create Account' : 'Sign In'
+              )}
+            </button>
           </form>
 
           <div className="mt-6 text-center">
-            
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            >
+              {isSignUp 
+                ? 'Already have an account? Sign in' 
+                : "Don't have an account? Sign up"}
+            </button>
             
             {!isSignUp && (
-              <div className="mt-3">
+              <div className="mt-3 space-y-2">
                 <div>
                   <button
                     type="button"
@@ -519,7 +537,15 @@ export function LoginForm() {
                     Forgot password?
                   </button>
                 </div>
-            
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setIsInviteFlow(true)}
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  >
+                    Received an invite? →
+                  </button>
+                </div>
               </div>
             )}
           </div>
