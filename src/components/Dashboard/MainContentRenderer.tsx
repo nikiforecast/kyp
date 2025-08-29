@@ -18,6 +18,7 @@ import { NoteTemplateManager } from '../NoteTemplateManager'
 import { NoteTemplateDetail } from '../NoteTemplateDetail'
 import { AssetDetail } from '../AssetDetail'
 import { SettingsManager } from '../SettingsManager'
+import { DesignSystem } from '../DesignSystem'
 import type { User } from '@supabase/supabase-js'
 import type { 
   Project, 
@@ -482,6 +483,10 @@ export function MainContentRenderer({
           onDeleteNoteTemplate={onDeleteNoteTemplate}
           onSelectNoteTemplate={onSelectNoteTemplate}
         />
+      )
+    case 'design-system':
+      return (
+        <DesignSystem onSignOut={onSignOut} />
       )
     case 'stakeholders':
       return (

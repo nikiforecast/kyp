@@ -30,6 +30,8 @@ export function Dashboard({ routeParams, pathname }: DashboardProps) {
       setCurrentDashboardView('stakeholders')
     } else if (pathname === '/settings') {
       setCurrentDashboardView('settings')
+    } else if (pathname === '/design-system') {
+      setCurrentDashboardView('design-system')
     } else if (pathname.startsWith('/project/') || 
                pathname.startsWith('/note/') || 
                pathname.startsWith('/user-story/') || 
@@ -71,6 +73,9 @@ export function Dashboard({ routeParams, pathname }: DashboardProps) {
         break
       case 'settings':
         navigate('/settings')
+        break
+      case 'design-system':
+        navigate('/design-system')
         break
       default:
         navigate('/')

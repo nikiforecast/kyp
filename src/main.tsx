@@ -23,6 +23,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/themes" element={<App />} />
         <Route path="/stakeholders" element={<App />} />
         <Route path="/settings" element={<App />} />
+        <Route path="/design-system" element={<App />} />
         <Route path="/workspace-dashboard" element={<App />} />
       </Routes>
     </BrowserRouter>

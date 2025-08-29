@@ -1,6 +1,41 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
 import type { Project } from '../../supabase'
 
+// Simple in-memory cache for stakeholder counts
+const stakeholderCountCache = new Map<string, { count: number; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+// Batch load stakeholder counts for multiple projects
+export const getProjectStakeholdersBatch = async (projectIds: string[]): Promise<Record<string, string[]>> => {
+  if (!isSupabaseConfigured || !supabase) {
+    return {}
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('project_stakeholders')
+      .select('project_id, stakeholder_id')
+      .in('project_id', projectIds)
+
+    if (error) throw error
+
+    // Group by project_id
+    const grouped: Record<string, string[]> = {}
+    projectIds.forEach(id => grouped[id] = [])
+    
+    data?.forEach(item => {
+      if (grouped[item.project_id]) {
+        grouped[item.project_id].push(item.stakeholder_id)
+      }
+    })
+
+    return grouped
+  } catch (error) {
+    console.error('Error fetching project stakeholders batch:', error)
+    return {}
+  }
+}
+
 export const getProjects = async (): Promise<Project[]> => {
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
@@ -65,7 +100,7 @@ export const getProjectByShortId = async (shortId: number): Promise<Project | nu
       return projects.find((project: Project) => project.short_id === shortId) || null
     } catch (fallbackError) {
       console.error('Local storage fallback also failed:', fallbackError)
-      return null
+      return []
     }
   }
 }
@@ -101,7 +136,7 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
       return projects.find((project: Project) => project.id === projectId) || null
     } catch (fallbackError) {
       console.error('Local storage fallback also failed:', fallbackError)
-      return null
+      return []
     }
   }
 }
@@ -110,42 +145,35 @@ export const createProject = async (name: string, overview?: string): Promise<Pr
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
     try {
-      const projects = JSON.parse(localStorage.getItem('kyp_projects') || '[]')
-      const nextShortId = Math.max(0, ...projects.map((p: Project) => p.short_id || 0)) + 1
+      const stored = localStorage.getItem('kyp_projects')
+      const projects = stored ? JSON.parse(stored) : []
       const newProject: Project = {
-        id: `proj-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        workspace_id: 'default-workspace',
+        id: `local_${Date.now()}`,
         name,
         overview: overview || null,
-        short_id: nextShortId,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        short_id: projects.length + 1,
+        workspace_id: 'local_workspace'
       }
       
-      projects.unshift(newProject)
-      localStorage.setItem('kyp_projects', JSON.stringify(projects))
+      const updatedProjects = [newProject, ...projects]
+      localStorage.setItem('kyp_projects', JSON.stringify(updatedProjects))
       return newProject
-    } catch (error) {
-      console.error('Error creating project locally:', error)
+    } catch {
       return null
     }
   }
 
   try {
-    // Get the workspace (assuming single workspace for now)
-    const { data: workspaces } = await supabase
-      .from('workspaces')
-      .select('id')
-      .limit(1)
-      .single()
-
     const { data, error } = await supabase
       .from('projects')
-      .insert([{
-        workspace_id: workspaces?.id || null,
-        name,
-        overview
-      }])
+      .insert([
+        {
+          name,
+          overview: overview || null
+        }
+      ])
       .select()
       .single()
 
@@ -161,18 +189,21 @@ export const updateProject = async (projectId: string, updates: { name?: string;
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
     try {
-      const projects = JSON.parse(localStorage.getItem('kyp_projects') || '[]')
-      const updatedProjects = projects.map((project: Project) => 
-        project.id === projectId 
-          ? { ...project, ...updates, updated_at: new Date().toISOString() }
-          : project
-      )
-      localStorage.setItem('kyp_projects', JSON.stringify(updatedProjects))
+      const stored = localStorage.getItem('kyp_projects')
+      const projects = stored ? JSON.parse(stored) : []
+      const projectIndex = projects.findIndex((p: Project) => p.id === projectId)
       
-      const updatedProject = updatedProjects.find((p: Project) => p.id === projectId)
-      return updatedProject || null
-    } catch (error) {
-      console.error('Error updating project locally:', error)
+      if (projectIndex === -1) return null
+      
+      projects[projectIndex] = {
+        ...projects[projectIndex],
+        ...updates,
+        updated_at: new Date().toISOString()
+      }
+      
+      localStorage.setItem('kyp_projects', JSON.stringify(projects))
+      return projects[projectIndex]
+    } catch {
       return null
     }
   }
@@ -180,7 +211,10 @@ export const updateProject = async (projectId: string, updates: { name?: string;
   try {
     const { data, error } = await supabase
       .from('projects')
-      .update(updates)
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', projectId)
       .select()
       .single()
@@ -197,12 +231,12 @@ export const deleteProject = async (projectId: string): Promise<boolean> => {
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
     try {
-      const projects = JSON.parse(localStorage.getItem('kyp_projects') || '[]')
-      const filteredProjects = projects.filter((project: Project) => project.id !== projectId)
+      const stored = localStorage.getItem('kyp_projects')
+      const projects = stored ? JSON.parse(stored) : []
+      const filteredProjects = projects.filter((p: Project) => p.id !== projectId)
       localStorage.setItem('kyp_projects', JSON.stringify(filteredProjects))
       return true
-    } catch (error) {
-      console.error('Error deleting project locally:', error)
+    } catch {
       return false
     }
   }
@@ -222,17 +256,14 @@ export const deleteProject = async (projectId: string): Promise<boolean> => {
 }
 
 export const getProjectStakeholders = async (projectId: string): Promise<string[]> => {
+  // Check cache first
+  const cached = stakeholderCountCache.get(projectId)
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return Array(cached.count).fill('').map((_, i) => `cached_${i}`) // Return dummy IDs for count
+  }
+
   if (!isSupabaseConfigured || !supabase) {
-    // Local storage fallback
-    try {
-      const stored = localStorage.getItem('kyp_project_stakeholders')
-      const projectStakeholders = stored ? JSON.parse(stored) : []
-      return projectStakeholders
-        .filter((ps: any) => ps.project_id === projectId)
-        .map((ps: any) => ps.stakeholder_id)
-    } catch {
-      return []
-    }
+    return []
   }
 
   try {
@@ -242,19 +273,28 @@ export const getProjectStakeholders = async (projectId: string): Promise<string[
       .eq('project_id', projectId)
 
     if (error) throw error
-    return data?.map(item => item.stakeholder_id) || []
+
+    const stakeholderIds = data?.map(item => item.stakeholder_id) || []
+    
+    // Cache the count
+    stakeholderCountCache.set(projectId, { 
+      count: stakeholderIds.length, 
+      timestamp: Date.now() 
+    })
+
+    return stakeholderIds
   } catch (error) {
     console.error('Error fetching project stakeholders:', error)
-    // Fallback to local storage if Supabase fetch fails
-    try {
-      const stored = localStorage.getItem('kyp_project_stakeholders')
-      const projectStakeholders = stored ? JSON.parse(stored) : []
-      return projectStakeholders
-        .filter((ps: any) => ps.project_id === projectId)
-        .map((ps: any) => ps.stakeholder_id)
-    } catch {
-      return []
-    }
+    return []
+  }
+}
+
+// Clear cache when needed (e.g., after updates)
+export const clearStakeholderCache = (projectId?: string) => {
+  if (projectId) {
+    stakeholderCountCache.delete(projectId)
+  } else {
+    stakeholderCountCache.clear()
   }
 }
 

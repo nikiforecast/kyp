@@ -249,6 +249,20 @@ export function WorkspaceDataFetcher({
         return
       }
 
+      if (pathname === '/design-system') {
+        console.log('🔵 WorkspaceDataFetcher: Processing design-system path')
+        setCurrentView('design-system')
+        onViewChange('design-system')
+        setSelectedProject(null)
+        setSelectedStakeholder(null)
+        setSelectedNote(null)
+        setSelectedUserJourney(null)
+        setSelectedUserStory(null)
+        setSelectedDesignForProject(null)
+        setSelectedLawFirm(null)
+        return
+      }
+
       if (pathname === '/workspace-dashboard') {
         console.log('🔵 WorkspaceDataFetcher: Processing workspace-dashboard path')
         setCurrentView('workspace-dashboard')
