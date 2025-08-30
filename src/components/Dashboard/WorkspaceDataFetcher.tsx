@@ -137,24 +137,7 @@ export function WorkspaceDataFetcher({
   const [userStoryComments, setUserStoryComments] = useState<UserStoryComment[]>([])
   
   // Loading states
-  const [loading, setLoading] = useState(false)
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [loadedData, setLoadedData] = useState({
-    workspaces: false,
-    projects: false,
-    stakeholders: false,
-    notes: false,
-    workspaceUsers: false,
-    userRoles: false,
-    lawFirms: false,
-    userPermissions: false,
-    themes: false,
-    noteTemplates: false,
-    projectProgress: false,
-    userStories: false,
-    userJourneys: false,
-    designs: false
-  })
+  const [loading, setLoading] = useState(true)
 
   // Load comments when selected user story changes
   useEffect(() => {
@@ -466,50 +449,30 @@ export function WorkspaceDataFetcher({
 
   const fetchAllData = async () => {
     try {
-      if (!user) {
-        console.warn('No user found, skipping data fetch')
-        setIsInitialLoad(false)
-        return
-      }
-
-      console.log('🔵 WorkspaceDataFetcher: Starting fetchAllData for user:', user.id)
+      setLoading(true)
       
-      // Check Supabase configuration
-      const { isSupabaseConfigured, supabase } = await import('../../lib/supabase')
-      console.log('🔵 WorkspaceDataFetcher: Supabase configured:', isSupabaseConfigured)
-      console.log('🔵 WorkspaceDataFetcher: Supabase client:', !!supabase)
-
-      // Get user's workspace first to enable efficient filtering
-      const [workspacesData, workspaceUsersData] = await Promise.all([
+      const [
+        workspacesData,
+        projectsData,
+        stakeholdersData,
+        notesData,
+        workspaceUsersData,
+        userRolesData,
+        lawFirmsData,
+        userPermissionsData,
+        allNoteStakeholders,
+        themesWithCountsData,
+        noteTemplatesData,
+        allProjectProgressStatusData,
+        allUserStoriesData,
+        allUserJourneysData,
+        allDesignsData
+      ] = await Promise.all([
         getWorkspaces(),
-        getWorkspaceUsers()
-      ])
-      
-      // Find the workspace that the current user belongs to
-      const userWorkspaceMembership = workspaceUsersData.find(wu => wu.user_id === user.id)
-      const userWorkspace = userWorkspaceMembership 
-        ? workspacesData.find(w => w.id === userWorkspaceMembership.workspace_id)
-        : workspacesData.find(w => w.created_by === user.id)
-      
-      console.log('🔵 WorkspaceDataFetcher: User workspace info:', {
-        userId: user.id,
-        userWorkspaceMembership: userWorkspaceMembership,
-        workspacesData: workspacesData.length,
-        userWorkspace: userWorkspace?.id,
-        userWorkspaceName: userWorkspace?.name
-      })
-      
-      if (!userWorkspace) {
-        console.warn('User not found in any workspace')
-        setIsInitialLoad(false)
-        return
-      }
-
-      // Load ALL data in parallel for maximum performance
-      const allDataPromise = Promise.all([
         getProjects(),
         getStakeholders(),
         getResearchNotes(),
+        getWorkspaceUsers(),
         getUserRoles(),
         getLawFirms(),
         getUserPermissions(),
@@ -522,139 +485,47 @@ export function WorkspaceDataFetcher({
         getDesigns()
       ])
       
-      console.log('🔵 WorkspaceDataFetcher: Starting data fetch...')
-      
-      // Wait for all data to load
-      const [
-        projectsData,
-        stakeholdersData,
-        notesData,
-        userRolesData,
-        lawFirmsData,
-        userPermissionsData,
-        allNoteStakeholders,
-        themesWithCountsData,
-        noteTemplatesData,
-        allProjectProgressStatusData,
-        allUserStoriesData,
-        allUserJourneysData,
-        allDesignsData
-      ] = await allDataPromise
-      
-      console.log('🔵 WorkspaceDataFetcher: Raw data received:', {
-        projectsData: projectsData.length,
-        stakeholdersData: stakeholdersData.length,
-        notesData: notesData.length,
-        userRolesData: userRolesData.length,
-        lawFirmsData: lawFirmsData.length,
-        userPermissionsData: userPermissionsData.length,
-        themesWithCountsData: themesWithCountsData.length,
-        noteTemplatesData: noteTemplatesData.length,
-        allProjectProgressStatusData: allProjectProgressStatusData.length,
-        allUserStoriesData: allUserStoriesData.length,
-        allUserJourneysData: allUserJourneysData.length,
-        allDesignsData: allDesignsData.length
-      })
-      
-      // Efficient filtering using Set for O(1) lookups
-      const workspaceProjectIds = new Set(
-        projectsData
-          .filter(p => p.workspace_id === userWorkspace.id)
-          .map(p => p.id)
-      )
-      
-      const filteredProjects = projectsData.filter(p => p.workspace_id === userWorkspace.id)
-      const filteredStakeholders = stakeholdersData.filter(s => s.workspace_id === userWorkspace.id)
-      const filteredNotes = notesData.filter(n => workspaceProjectIds.has(n.project_id))
-      
-      // Filter remaining data efficiently
-      const filteredWorkspaceUsers = workspaceUsersData.filter(u => u.workspace_id === userWorkspace.id)
-      const filteredUserRoles = userRolesData.filter(r => r.workspace_id === userWorkspace.id)
-      const filteredLawFirms = lawFirmsData.filter(l => l.workspace_id === userWorkspace.id)
-      const filteredUserPermissions = userPermissionsData.filter(p => p.workspace_id === userWorkspace.id)
-      const filteredThemes = themesWithCountsData.filter(t => t.workspace_id === userWorkspace.id)
-      const filteredNoteTemplates = noteTemplatesData.filter(t => t.workspace_id === userWorkspace.id)
-      
-      // Filter project-related data using the Set for O(1) lookups
-      const filteredProjectProgress = allProjectProgressStatusData.filter(p => workspaceProjectIds.has(p.project_id))
-      const filteredUserStories = allUserStoriesData.filter(s => workspaceProjectIds.has(s.project_id))
-      const filteredUserJourneys = allUserJourneysData.filter(j => workspaceProjectIds.has(j.project_id))
-      const filteredDesigns = allDesignsData.filter(d => workspaceProjectIds.has(d.project_id))
-      
-      // Set all data at once for better performance
-      setProjects(filteredProjects)
-      setStakeholders(filteredStakeholders)
-      setNotes(filteredNotes)
       setWorkspaces(workspacesData)
-      setWorkspaceUsers(filteredWorkspaceUsers)
-      setUserRoles(filteredUserRoles)
-      setLawFirms(filteredLawFirms)
-      setUserPermissions(filteredUserPermissions)
-      setThemesWithCounts(filteredThemes)
-      setThemes(filteredThemes.map(t => ({ ...t, contentCounts: undefined })))
-      setNoteTemplates(filteredNoteTemplates)
-      setAllProjectProgressStatus(filteredProjectProgress)
-      setAllUserStories(filteredUserStories)
-      setAllUserJourneys(filteredUserJourneys)
-      setAllDesigns(filteredDesigns)
+      setProjects(projectsData)
+      setStakeholders(stakeholdersData)
+      setNotes(notesData)
+      setWorkspaceUsers(workspaceUsersData)
+      setUserRoles(userRolesData)
+      setLawFirms(lawFirmsData)
+      setUserPermissions(userPermissionsData)
+      setThemesWithCounts(themesWithCountsData)
+      setThemes(themesWithCountsData.map(t => ({ ...t, contentCounts: undefined })))
+      setNoteTemplates(noteTemplatesData)
+      setAllProjectProgressStatus(allProjectProgressStatusData)
+      setAllUserStories(allUserStoriesData)
+      setAllUserJourneys(allUserJourneysData)
+      setAllDesigns(allDesignsData)
       
-      // Debug logging to see what data was loaded
-      console.log('🔵 WorkspaceDataFetcher: Data loaded successfully:', {
-        userWorkspace: userWorkspace.id,
-        projects: filteredProjects.length,
-        stakeholders: filteredStakeholders.length,
-        notes: filteredNotes.length,
-        lawFirms: filteredLawFirms.length,
-        userRoles: filteredUserRoles.length,
-        userPermissions: filteredUserPermissions.length,
-        themes: filteredThemes.length,
-        noteTemplates: filteredNoteTemplates.length,
-        projectProgress: filteredProjectProgress.length,
-        userStories: filteredUserStories.length,
-        userJourneys: filteredUserJourneys.length,
-        designs: filteredDesigns.length
-      })
+      // Debug: Log workspaceUsers data
+      console.log('🔵 WorkspaceDataFetcher: workspaceUsersData:', workspaceUsersData)
+      console.log('🔵 WorkspaceDataFetcher: workspaceUsersData length:', workspaceUsersData.length)
+      console.log('🔵 WorkspaceDataFetcher: workspaceUsersData type:', typeof workspaceUsersData)
+      console.log('🔵 WorkspaceDataFetcher: workspaceUsersData is array:', Array.isArray(workspaceUsersData))
       
-      // Update all loaded data flags at once
-      setLoadedData(prev => ({
-        ...prev,
-        projects: true,
-        stakeholders: true,
-        notes: true,
-        workspaces: true,
-        workspaceUsers: true,
-        userRoles: true,
-        lawFirms: true,
-        userPermissions: true,
-        themes: true,
-        noteTemplates: true,
-        projectProgress: true,
-        userStories: true,
-        userJourneys: true,
-        designs: true
-      }))
-      
-      // Mark initial load as complete
-      setIsInitialLoad(false)
-      
-
-      
-
-      
-
-      
-
+      // Debug: Check state after setting
+      setTimeout(() => {
+        console.log('🔵 WorkspaceDataFetcher: workspaceUsers state after setState:', workspaceUsers)
+        console.log('🔵 WorkspaceDataFetcher: workspaceUsers state length:', workspaceUsers.length)
+      }, 100)
       
       // Calculate stakeholder notes count
       const stakeholderNotesCount: Record<string, number> = {}
+      console.log('📊 WorkspaceDataFetcher: allNoteStakeholders data:', allNoteStakeholders)
+      console.log('📊 WorkspaceDataFetcher: Number of notes with stakeholders:', Object.keys(allNoteStakeholders).length)
+      
       Object.values(allNoteStakeholders).forEach(stakeholderIds => {
         stakeholderIds.forEach(stakeholderId => {
           stakeholderNotesCount[stakeholderId] = (stakeholderNotesCount[stakeholderId] || 0) + 1
         })
       })
       
+      console.log('📊 WorkspaceDataFetcher: Final stakeholder notes count:', stakeholderNotesCount)
       setStakeholderNotesCountMap(stakeholderNotesCount)
-      
     } catch (error) {
       if (error instanceof SupabaseAuthError) {
         console.warn('Authentication session expired during data fetch, user will be signed out')
@@ -662,7 +533,8 @@ export function WorkspaceDataFetcher({
       } else {
         console.error('Error fetching data:', error)
       }
-      setIsInitialLoad(false)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -1113,7 +985,6 @@ export function WorkspaceDataFetcher({
     <MainContentRenderer
       currentView={currentView}
       loading={loading}
-      isInitialLoad={isInitialLoad}
       projects={projects}
       stakeholders={stakeholders}
       notes={notes}
