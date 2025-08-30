@@ -3,6 +3,7 @@ import { FolderOpen, Plus, Loader2, Edit, Trash2, FileText, BookOpen, GitBranch,
 import { getProjectStakeholders, getProjectStakeholdersBatch } from '../lib/database/services/projectService'
 import type { Project, ProjectProgressStatus, UserStory, UserJourney, Design, Stakeholder, ResearchNote, ProblemOverview } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import { Button } from './DesignSystem/components'
 import { 
   DndContext, 
   closestCorners, 
@@ -150,7 +151,7 @@ const SortableProjectCard = React.memo(function SortableProjectCard({
     <div 
       ref={setNodeRef}
       style={style}
-      className={`bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer ${
+      className={`bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md hover:scale-[1.005] transition-all duration-600 ease-out cursor-pointer ${
         isDragging ? 'opacity-50 scale-105' : ''
       } ${isDragOverlay ? 'shadow-2xl' : ''}`}
       onClick={() => onProjectClick(project)}
@@ -166,7 +167,7 @@ const SortableProjectCard = React.memo(function SortableProjectCard({
               e.stopPropagation()
               onProjectEdit(project)
             }}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-400"
             title="Edit Project"
           >
             <Edit size={16} />
@@ -176,7 +177,7 @@ const SortableProjectCard = React.memo(function SortableProjectCard({
               e.stopPropagation()
               onProjectDelete(project.id, project.name)
             }}
-            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-400"
             title="Delete Project"
           >
             <Trash2 size={16} />
@@ -184,7 +185,7 @@ const SortableProjectCard = React.memo(function SortableProjectCard({
           <div
             {...attributes}
             {...listeners}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all cursor-grab active:cursor-grabbing"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-400 cursor-grab active:cursor-grabbing"
             title="Drag to reorder"
           >
             <GripVertical size={16} />
@@ -533,13 +534,14 @@ export function ProjectManager({
             <p className="text-sm text-blue-600">Loading project order...</p>
           )}
         </div>
-        <button
+        <Button
           onClick={() => setShowProjectForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+          icon={Plus}
+          variant="primary"
+          size="default"
         >
-          <Plus size={20} />
-          New Project
-        </button>
+          Create Project
+        </Button>
       </div>
 
       {/* Create Project Form */}
@@ -569,22 +571,23 @@ export function ProjectManager({
               />
             </div>
             <div className="flex items-center gap-3">
-              <button 
-                type="submit" 
-                disabled={creatingProject}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50"
-              >
-                {creatingProject && <Loader2 size={16} className="animate-spin" />}
-                Create Project
-              </button>
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowProjectForm(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
+                variant="outline"
                 disabled={creatingProject}
               >
                 Cancel
-              </button>
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={creatingProject}
+                loading={creatingProject}
+                icon={creatingProject ? Loader2 : undefined}
+                variant="primary"
+              >
+                Create Project
+              </Button>
             </div>
           </form>
         </div>
@@ -617,22 +620,23 @@ export function ProjectManager({
               />
             </div>
             <div className="flex items-center gap-3">
-              <button 
+              <Button 
                 type="submit" 
                 disabled={updatingProject}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50"
+                loading={updatingProject}
+                icon={updatingProject ? Loader2 : undefined}
+                variant="primary"
               >
-                {updatingProject && <Loader2 size={16} className="animate-spin" />}
                 Update Project
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setEditingProject(null)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
+                variant="outline"
                 disabled={updatingProject}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         </div>

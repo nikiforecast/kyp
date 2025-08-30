@@ -36,14 +36,14 @@ export function Button({
   const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-300 ease-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
   
   const sizeClasses = {
-    small: 'px-3 py-3 text-sm h-9',
-    default: 'px-5 py-2.5 text-base'
+    small: 'px-3 py-2 text-sm h-8',
+    default: 'px-5 py-2.5 text-base h-10'
   }
   
   const roundedClasses = {
     sm: 'rounded-md',
     md: 'rounded-lg',
-    lg: 'rounded-xl',
+    lg: 'rounded-lg',
     xl: 'rounded-2xl',
     full: 'rounded-full'
   }
@@ -135,7 +135,7 @@ export function FloatingButton({ children, ...props }: Omit<ButtonProps, 'varian
     <Button
       variant="primary"
       shadow="lg"
-      rounded="full"
+      rounded="lg"
       className="fixed bottom-6 right-6 z-50 shadow-2xl hover:shadow-3xl hover:scale-110"
       {...props}
     >
@@ -151,7 +151,7 @@ export function IconButton({
   ...props 
 }: Omit<ButtonProps, 'children' | 'icon' | 'iconPosition'> & { icon: LucideIcon }) {
   const iconSizes = {
-    small: 'p-1',
+    small: 'p-1.5',
     default: 'p-2.5'
   }
   

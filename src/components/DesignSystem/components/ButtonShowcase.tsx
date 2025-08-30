@@ -32,18 +32,7 @@ export function ButtonShowcase() {
         </p>
       </div>
 
-      {/* Variants */}
-      <div className="space-y-8">
-        <h3 className="text-2xl font-semibold text-gray-900">Button Variants</h3>
-        <div className="space-y-6">
-          <div className="flex items-center gap-6 flex-wrap">
-            <Button variant="primary">Primary</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="outline">Outline</Button>
-            <Button variant="ghost">Ghost</Button>
-          </div>
-        </div>
-      </div>
+      
 
       {/* Sizes */}
       <div className="space-y-8">

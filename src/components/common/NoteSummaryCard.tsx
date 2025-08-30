@@ -1,6 +1,7 @@
 import React from 'react'
 import { FileText, Trash2 } from 'lucide-react'
 import { StakeholderTag } from './StakeholderTag'
+import { Button } from '../DesignSystem/components'
 import type { ResearchNote, Stakeholder, UserRole, LawFirm } from '../../lib/supabase'
 
 interface NoteSummaryCardProps {
@@ -61,16 +62,18 @@ export function NoteSummaryCard({
           </div>
           <div className="flex items-center gap-2">
             {showDeleteButton && (
-              <button
+              <Button
                 onClick={(e) => {
                   e.stopPropagation()
                   onDelete(note.id)
                 }}
-                className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                icon={Trash2}
+                variant="ghost"
+                size="small"
+                className="text-red-600 hover:bg-red-50"
               >
-                <Trash2 size={14} />
                 Delete
-              </button>
+              </Button>
             )}
           </div>
         </div>

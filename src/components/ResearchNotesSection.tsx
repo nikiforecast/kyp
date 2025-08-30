@@ -2,6 +2,7 @@ import React from 'react'
 import { Plus, FileText, Edit, Trash2, Loader2, Search, X } from 'lucide-react'
 import { CKEditorComponent } from './CKEditorComponent'
 import { NoteSummaryCard } from './common/NoteSummaryCard'
+import { Button } from './DesignSystem/components'
 import type { ResearchNote, Stakeholder, UserRole, LawFirm } from '../lib/supabase'
 
 // Extend ResearchNote type to include stakeholder IDs for editing
@@ -113,13 +114,14 @@ export function ResearchNotesSection({
             {hasActiveFilters && ' (filtered)'}
           </p>
         </div>
-        <button
+        <Button
           onClick={onCreateNote}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+          icon={Plus}
+          variant="primary"
+          size="default"
         >
-          <Plus size={20} />
           Add Note
-        </button>
+        </Button>
       </div>
 
       {/* Search and Filters */}
@@ -262,12 +264,13 @@ export function ResearchNotesSection({
         {/* Clear Filters */}
         {hasActiveFilters && (
           <div className="flex justify-end">
-            <button
+            <Button
               onClick={clearAllFilters}
-              className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all"
+              variant="ghost"
+              size="small"
             >
               Clear all filters
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -304,12 +307,14 @@ export function ResearchNotesSection({
           <div className="text-center py-12">
             <FileText size={48} className="mx-auto text-gray-300 mb-4" />
             <p className="text-gray-500">No notes & calls match your current filters.</p>
-            <button
+            <Button
               onClick={clearAllFilters}
-              className="mt-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
+              variant="ghost"
+              size="small"
+              className="mt-2 text-blue-600 hover:text-blue-700"
             >
               Clear filters to see all notes
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>
