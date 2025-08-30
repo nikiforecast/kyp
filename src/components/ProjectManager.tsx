@@ -144,10 +144,7 @@ const SortableProjectCard = React.memo(function SortableProjectCard({
     transition,
   }
 
-  // Calculate progress percentage
-  const totalProgressItems = projectData.progressStatuses.length
-  const completedProgressItems = projectData.progressStatuses.filter(ps => ps.is_completed).length
-  const progressPercentage = totalProgressItems > 0 ? Math.round((completedProgressItems / totalProgressItems) * 100) : 0
+
 
   return (
     <div 
@@ -161,10 +158,7 @@ const SortableProjectCard = React.memo(function SortableProjectCard({
       {/* Drag Handle */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{project.name}</h3>
-          {project.overview && (
-            <p className="text-sm text-gray-600 line-clamp-2">{project.overview}</p>
-          )}
+          <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -198,19 +192,7 @@ const SortableProjectCard = React.memo(function SortableProjectCard({
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-          <span>Progress</span>
-          <span>{progressPercentage}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
-      </div>
+
 
       {/* Project Stats */}
       <div className="grid grid-cols-2 gap-4 text-sm">

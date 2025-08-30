@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Palette, Square, Type, Layout, Layers, Zap, LucideIcon } from 'lucide-react'
-import { Button } from './components/Button'
+import { ButtonShowcase } from './components/ButtonShowcase'
+import { TypographyShowcase } from './components/TypographyShowcase'
+import { ColorShowcase } from './components/ColorShowcase'
 
 interface NavigationItem {
   id: string
@@ -13,101 +15,7 @@ interface DesignSystemProps {
   onSignOut: () => void
 }
 
-// Define showcase components first
-function ButtonShowcase() {
-  return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Buttons</h2>
-        <p className="text-gray-600">A collection of button components used throughout the platform.</p>
-      </div>
 
-      <div className="space-y-6">
-        {/* Primary Buttons */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Primary Buttons</h3>
-          <div className="flex flex-wrap gap-4">
-            <Button variant="primary" size="sm">Small Primary</Button>
-            <Button variant="primary" size="md">Medium Primary</Button>
-            <Button variant="primary" size="lg">Large Primary</Button>
-          </div>
-        </section>
-
-        {/* Secondary Buttons */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Secondary Buttons</h3>
-          <div className="flex flex-wrap gap-4">
-            <Button variant="secondary" size="sm">Small Secondary</Button>
-            <Button variant="secondary" size="md">Medium Secondary</Button>
-            <Button variant="secondary" size="lg">Large Secondary</Button>
-          </div>
-        </section>
-
-        {/* Outline Buttons */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Outline Buttons</h3>
-          <div className="flex flex-wrap gap-4">
-            <Button variant="outline" size="sm">Small Outline</Button>
-            <Button variant="outline" size="md">Medium Outline</Button>
-            <Button variant="outline" size="lg">Large Outline</Button>
-          </div>
-        </section>
-
-        {/* Ghost Buttons */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Ghost Buttons</h3>
-          <div className="flex flex-wrap gap-4">
-            <Button variant="ghost" size="sm">Small Ghost</Button>
-            <Button variant="ghost" size="md">Medium Ghost</Button>
-            <Button variant="ghost" size="lg">Large Ghost</Button>
-          </div>
-        </section>
-
-        {/* Danger Buttons */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Danger Buttons</h3>
-          <div className="flex flex-wrap gap-4">
-            <Button variant="danger" size="sm">Small Danger</Button>
-            <Button variant="danger" size="md">Medium Danger</Button>
-            <Button variant="danger" size="lg">Large Danger</Button>
-          </div>
-        </section>
-
-        {/* Disabled States */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Disabled States</h3>
-          <div className="flex flex-wrap gap-4">
-            <Button variant="primary" size="md" disabled>Disabled Primary</Button>
-            <Button variant="secondary" size="md" disabled>Disabled Secondary</Button>
-            <Button variant="outline" size="md" disabled>Disabled Outline</Button>
-          </div>
-        </section>
-
-        {/* With Icons */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">With Icons</h3>
-          <div className="flex flex-wrap gap-4">
-            <Button variant="primary" size="md" icon="plus">Add Item</Button>
-            <Button variant="secondary" size="md" icon="edit">Edit</Button>
-            <Button variant="outline" size="md" icon="trash">Delete</Button>
-          </div>
-        </section>
-      </div>
-    </div>
-  )
-}
-
-function TypographyShowcase() {
-  return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Typography</h2>
-        <p className="text-gray-600">Typography system and text styles used throughout the platform.</p>
-      </div>
-      <p className="text-gray-500">Typography showcase coming soon...</p>
-    </div>
-  )
-}
 
 function LayoutShowcase() {
   return (
@@ -162,6 +70,12 @@ export function DesignSystem({ onSignOut }: DesignSystemProps) {
       component: <TypographyShowcase />
     },
     {
+      id: 'colors',
+      label: 'Colors',
+      icon: Palette,
+      component: <ColorShowcase />
+    },
+    {
       id: 'layout',
       label: 'Layout',
       icon: Layout,
@@ -184,7 +98,7 @@ export function DesignSystem({ onSignOut }: DesignSystemProps) {
   const currentComponent = navigationItems.find(item => item.id === selectedComponent)?.component
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-gray-50 flex overflow-hidden w-full min-w-full">
       {/* Left Navigation */}
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
         {/* Header */}
@@ -228,8 +142,8 @@ export function DesignSystem({ onSignOut }: DesignSystemProps) {
       </div>
 
       {/* Content Area */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
+      <main className="flex-1 overflow-auto w-full min-w-full">
+        <div className="p-8 w-full max-w-none min-w-full !max-w-none">
           {currentComponent}
         </div>
       </main>
