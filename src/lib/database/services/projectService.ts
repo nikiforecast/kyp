@@ -41,7 +41,8 @@ export const getProjects = async (): Promise<Project[]> => {
     // Local storage fallback
     try {
       const stored = localStorage.getItem('kyp_projects')
-      return stored ? JSON.parse(stored) : []
+      const projects = stored ? JSON.parse(stored) : []
+      return projects
     } catch {
       return []
     }
@@ -61,13 +62,16 @@ export const getProjects = async (): Promise<Project[]> => {
     // Fallback to local storage if Supabase fails
     try {
       const stored = localStorage.getItem('kyp_projects')
-      return stored ? JSON.parse(stored) : []
+      const projects = stored ? JSON.parse(stored) : []
+      return projects
     } catch (fallbackError) {
       console.error('Local storage fallback also failed:', fallbackError)
       return []
     }
   }
 }
+
+
 
 export const getProjectByShortId = async (shortId: number): Promise<Project | null> => {
   if (!isSupabaseConfigured || !supabase) {

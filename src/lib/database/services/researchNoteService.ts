@@ -2,17 +2,24 @@ import { supabase, isSupabaseConfigured } from '../../supabase'
 import type { ResearchNote, NoteLink } from '../../supabase'
 
 export const getResearchNotes = async (): Promise<ResearchNote[]> => {
+  console.log('🔍 Debug: getResearchNotes called, isSupabaseConfigured:', isSupabaseConfigured, 'supabase:', !!supabase)
+  
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
+    console.log('🔍 Debug: Using local storage fallback for research notes')
     try {
       const stored = localStorage.getItem('kyp_research_notes')
-      return stored ? JSON.parse(stored) : []
+      const notes = stored ? JSON.parse(stored) : []
+      console.log('🔍 Debug: Local storage research notes:', notes)
+      return notes
     } catch {
+      console.log('🔍 Debug: Local storage fallback failed')
       return []
     }
   }
 
   try {
+    console.log('🔍 Debug: Fetching research notes from Supabase')
     const { data, error } = await supabase
       .from('research_notes')
       .select('*')
@@ -20,12 +27,15 @@ export const getResearchNotes = async (): Promise<ResearchNote[]> => {
       .order('created_at', { ascending: false })
 
     if (error) throw error
+    console.log('🔍 Debug: Supabase research notes data:', data)
     return data || []
   } catch (error) {
     console.error('Error fetching research notes:', error)
     return []
   }
 }
+
+
 
 export const getResearchNoteByShortId = async (shortId: number): Promise<ResearchNote | null> => {
   if (!isSupabaseConfigured || !supabase) {

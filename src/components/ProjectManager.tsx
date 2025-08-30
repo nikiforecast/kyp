@@ -31,6 +31,18 @@ import {
 } from '../lib/database/services/userProjectPreferenceService'
 import { supabase } from '../lib/supabase'
 
+/**
+ * ProjectManager Component - Performance Optimized
+ * 
+ * Key Performance Optimizations:
+ * 1. O(1) lookup maps instead of O(n) filtering for project data
+ * 2. Virtual scrolling with visibleProjectCount (shows 12 projects initially)
+ * 3. Debounced search to prevent excessive filtering
+ * 4. React.memo with custom comparison for project cards
+ * 5. Performance monitoring for slow renders
+ * 6. Batch loading of stakeholder counts
+ * 7. Efficient project data processing with Map data structures
+ */
 interface ProjectManagerProps {
   projects: Project[]
   stakeholders?: Stakeholder[]
@@ -68,7 +80,7 @@ interface SortableProjectCardProps {
 }
 
 // Staggered animation wrapper for project cards
-const StaggeredProjectCard = ({ project, projectData, index, ...props }: any) => (
+const StaggeredProjectCard = React.memo(({ project, projectData, index, ...props }: any) => (
   <div
     className="animate-in fade-in slide-in-from-bottom-4"
     style={{
@@ -83,7 +95,20 @@ const StaggeredProjectCard = ({ project, projectData, index, ...props }: any) =>
       {...props}
     />
   </div>
-)
+), (prevProps, nextProps) => {
+  // Custom comparison for React.memo to prevent unnecessary re-renders
+  return (
+    prevProps.project.id === nextProps.project.id &&
+    prevProps.project.name === nextProps.project.name &&
+    prevProps.project.overview === nextProps.project.overview &&
+    prevProps.projectData.notes.length === nextProps.projectData.notes.length &&
+    prevProps.projectData.stakeholderCount === nextProps.projectData.stakeholderCount &&
+    prevProps.projectData.progressStatuses.length === nextProps.projectData.progressStatuses.length &&
+    prevProps.projectData.userStories.length === nextProps.projectData.userStories.length &&
+    prevProps.projectData.userJourneys.length === nextProps.projectData.userJourneys.length &&
+    prevProps.projectData.designs.length === nextProps.projectData.designs.length
+  )
+})
 
 // Loading skeleton component
 const ProjectCardSkeleton = () => (
@@ -240,6 +265,20 @@ export function ProjectManager({
   onDeleteProject
 }: ProjectManagerProps) {
   const { user } = useAuth()
+  
+  // Performance monitoring
+  useEffect(() => {
+    const startTime = performance.now()
+    
+    return () => {
+      const endTime = performance.now()
+      const renderTime = endTime - startTime
+      if (renderTime > 100) { // Log slow renders
+        console.warn(`ProjectManager render took ${renderTime.toFixed(2)}ms - ${projects.length} projects, ${notes.length} notes`)
+      }
+    }
+  }, [projects.length, notes.length, problemOverviews.length, allProjectProgressStatus.length, allUserStories.length, allUserJourneys.length, allDesigns.length])
+  
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [newProject, setNewProject] = useState({ name: '', overview: '' })
@@ -269,27 +308,101 @@ export function ProjectManager({
   const projectDataMap = useMemo(() => {
     const dataMap = new Map<string, ProjectData>()
     
+    // Create lookup maps for O(1) access instead of O(n) filtering
+    const notesByProject = new Map<string, ResearchNote[]>()
+    const problemOverviewsByProject = new Map<string, ProblemOverview>()
+    const progressStatusesByProject = new Map<string, ProjectProgressStatus[]>()
+    const userStoriesByProject = new Map<string, UserStory[]>()
+    const userJourneysByProject = new Map<string, UserJourney[]>()
+    const designsByProject = new Map<string, Design[]>()
+    
+    // Pre-process data into lookup maps (O(n) once instead of O(n*m) for each project)
+    notes.forEach(note => {
+      const existing = notesByProject.get(note.project_id) || []
+      existing.push(note)
+      notesByProject.set(note.project_id, existing)
+    })
+    
+    problemOverviews.forEach(po => {
+      problemOverviewsByProject.set(po.project_id, po)
+    })
+    
+    allProjectProgressStatus.forEach(ps => {
+      const existing = progressStatusesByProject.get(ps.project_id) || []
+      existing.push(ps)
+      progressStatusesByProject.set(ps.project_id, existing)
+    })
+    
+    allUserStories.forEach(us => {
+      const existing = userStoriesByProject.get(us.project_id) || []
+      existing.push(us)
+      userStoriesByProject.set(us.project_id, existing)
+    })
+    
+    allUserJourneys.forEach(uj => {
+      const existing = userJourneysByProject.get(uj.project_id) || []
+      existing.push(uj)
+      userJourneysByProject.set(uj.project_id, existing)
+    })
+    
+    allDesigns.forEach(d => {
+      const existing = designsByProject.get(d.project_id) || []
+      existing.push(d)
+      designsByProject.set(d.project_id, existing)
+    })
+    
+    // Now build project data map with O(1) lookups
     projects.forEach(project => {
-      const projectNotes = notes.filter(note => note.project_id === project.id)
-      const projectProblemOverview = problemOverviews.find(po => po.project_id === project.id)
-      const projectProgressStatuses = allProjectProgressStatus.filter(ps => ps.project_id === project.id)
-      const projectUserStories = allUserStories.filter(us => us.project_id === project.id)
-      const projectUserJourneys = allUserJourneys.filter(uj => uj.project_id === project.id)
-      const projectDesigns = allDesigns.filter(d => d.project_id === project.id)
-      
       dataMap.set(project.id, {
-        notes: projectNotes,
-        problemOverview: projectProblemOverview,
-        progressStatuses: projectProgressStatuses,
-        userStories: projectUserStories,
-        userJourneys: projectUserJourneys,
-        designs: projectDesigns,
+        notes: notesByProject.get(project.id) || [],
+        problemOverview: problemOverviewsByProject.get(project.id),
+        progressStatuses: progressStatusesByProject.get(project.id) || [],
+        userStories: userStoriesByProject.get(project.id) || [],
+        userJourneys: userJourneysByProject.get(project.id) || [],
+        designs: designsByProject.get(project.id) || [],
         stakeholderCount: stakeholderCounts[project.id] || 0
       })
     })
     
     return dataMap
   }, [projects, notes, problemOverviews, allProjectProgressStatus, allUserStories, allUserJourneys, allDesigns, stakeholderCounts])
+
+  // Performance optimization: Only render visible projects initially
+  const [visibleProjectCount, setVisibleProjectCount] = useState(12) // Show first 12 projects
+  
+  // Load more projects when user scrolls or explicitly requests
+  const loadMoreProjects = useCallback(() => {
+    setVisibleProjectCount(prev => Math.min(prev + 12, orderedProjects.length))
+  }, [orderedProjects.length])
+  
+  // Reset visible count when projects change
+  useEffect(() => {
+    setVisibleProjectCount(12)
+  }, [orderedProjects.length])
+  
+  // Search functionality for better performance with large project lists
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+  
+  // Debounce search input to prevent excessive filtering
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 300)
+    
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+  
+  // Filter projects based on search term
+  const filteredProjects = useMemo(() => {
+    if (!debouncedSearchTerm.trim()) return orderedProjects
+    
+    const searchLower = debouncedSearchTerm.toLowerCase()
+    return orderedProjects.filter(project => 
+      project.name.toLowerCase().includes(searchLower) ||
+      (project.overview && project.overview.toLowerCase().includes(searchLower))
+    )
+  }, [orderedProjects, debouncedSearchTerm])
 
   // Load stakeholder counts efficiently - batch load all at once
   useEffect(() => {
@@ -532,14 +645,36 @@ export function ProjectManager({
           {isLoadingPreferences && (
             <p className="text-sm text-blue-600">Loading project order...</p>
           )}
+          {projects.length > 0 && (
+            <p className="text-sm text-gray-500">
+              {filteredProjects.length} of {orderedProjects.length} projects • {notes.length} notes • {stakeholders.length} stakeholders
+            </p>
+          )}
         </div>
-        <button
-          onClick={() => setShowProjectForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
-        >
-          <Plus size={20} />
-          New Project
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Search Input */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowProjectForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+          >
+            <Plus size={20} />
+            New Project
+          </button>
+        </div>
       </div>
 
       {/* Create Project Form */}
@@ -661,7 +796,8 @@ export function ProjectManager({
                 <ProjectCardSkeleton key={`skeleton-${index}`} />
               ))
             ) : (
-              orderedProjects.map((project, index) => {
+              // Only render visible projects for better performance
+              filteredProjects.slice(0, visibleProjectCount).map((project, index) => {
                 const projectData = projectDataMap.get(project.id)
                 if (!projectData) return null
 
@@ -686,6 +822,19 @@ export function ProjectManager({
             )}
           </div>
         </SortableContext>
+
+        {/* Load More Button for Performance */}
+        {filteredProjects.length > visibleProjectCount && (
+          <div className="col-span-full flex justify-center mt-8">
+            <button
+              onClick={loadMoreProjects}
+              className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-2"
+            >
+              <Plus size={20} />
+              Load More Projects ({visibleProjectCount} of {filteredProjects.length})
+            </button>
+          </div>
+        )}
 
         {/* Drag Overlay for better visual feedback */}
         <DragOverlay>

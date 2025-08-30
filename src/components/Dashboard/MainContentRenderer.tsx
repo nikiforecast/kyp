@@ -40,6 +40,7 @@ import type {
 interface MainContentRendererProps {
   currentView: string
   loading: boolean
+  isInitialLoad: boolean
   
   // Data states
   projects: Project[]
@@ -145,6 +146,7 @@ interface MainContentRendererProps {
 export function MainContentRenderer({
   currentView,
   loading,
+  isInitialLoad,
   projects,
   stakeholders,
   notes,
@@ -222,12 +224,13 @@ export function MainContentRenderer({
   onStoriesReordered,
   onSignOut
 }: MainContentRendererProps) {
-  if (loading) {
+  // Show loading only for initial critical data load
+  if (isInitialLoad) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex items-center gap-3">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="text-gray-600">Loading workspace...</span>
+          <span className="text-gray-600">Loading critical data...</span>
         </div>
       </div>
     )
@@ -412,6 +415,7 @@ export function MainContentRenderer({
           allUserStories={allUserStories}
           allUserJourneys={allUserJourneys}
           allDesigns={allDesigns}
+          isInitialLoad={isInitialLoad}
           onCreateProject={onCreateProject}
           onSelectProject={onSelectProject}
           onUpdateProject={onUpdateProject}
@@ -512,6 +516,7 @@ export function MainContentRenderer({
           allUserStories={allUserStories}
           allUserJourneys={allUserJourneys}
           allDesigns={allDesigns}
+          isInitialLoad={isInitialLoad}
           onCreateProject={onCreateProject}
           onSelectProject={onSelectProject}
           onUpdateProject={onUpdateProject}
