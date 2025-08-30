@@ -2,39 +2,29 @@ import { supabase, isSupabaseConfigured } from '../../supabase'
 import type { Stakeholder } from '../../supabase'
 
 export const getStakeholders = async (): Promise<Stakeholder[]> => {
-  console.log('🔍 Debug: getStakeholders called, isSupabaseConfigured:', isSupabaseConfigured, 'supabase:', !!supabase)
-  
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
-    console.log('🔍 Debug: Using local storage fallback for stakeholders')
     try {
       const stored = localStorage.getItem('kyp_stakeholders')
-      const stakeholders = stored ? JSON.parse(stored) : []
-      console.log('🔍 Debug: Local storage stakeholders:', stakeholders)
-      return stakeholders
+      return stored ? JSON.parse(stored) : []
     } catch {
-      console.log('🔍 Debug: Local storage fallback failed')
       return []
     }
   }
 
   try {
-    console.log('🔍 Debug: Fetching stakeholders from Supabase')
     const { data, error } = await supabase
       .from('stakeholders')
       .select('*')
       .order('created_at', { ascending: false })
 
     if (error) throw error
-    console.log('🔍 Debug: Supabase stakeholders data:', data)
     return data || []
   } catch (error) {
     console.error('Error fetching stakeholders:', error)
     return []
   }
 }
-
-
 
 export const getStakeholderByShortId = async (shortId: number): Promise<Stakeholder | null> => {
   if (!isSupabaseConfigured || !supabase) {
