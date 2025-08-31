@@ -157,6 +157,7 @@ export function IconButton({
   
   return (
     <Button
+      data-component="KYP-button"
       variant={variant}
       size={size}
       className={`${iconSizes[size]} min-w-0`}

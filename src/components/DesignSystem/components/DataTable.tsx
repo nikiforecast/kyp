@@ -77,13 +77,13 @@ export function DataTable<T>({
     }
   }
 
-  const handleSelectItem = (itemId: string, checked: boolean, event?: React.MouseEvent) => {
+  const handleSelectItem = (itemId: string, checked: boolean, event?: React.MouseEvent | React.ChangeEvent<HTMLInputElement>) => {
     if (!onSelectionChange) return
 
     const currentIndex = sortedData.findIndex(item => getItemId(item) === itemId)
     
     // Check if shift key is pressed and we have a previous selection
-    if (event?.shiftKey && lastSelectedIndex !== null && currentIndex !== -1) {
+    if (event && 'shiftKey' in event && event.shiftKey && lastSelectedIndex !== null && currentIndex !== -1) {
       const startIndex = Math.min(lastSelectedIndex, currentIndex)
       const endIndex = Math.max(lastSelectedIndex, currentIndex)
       
@@ -144,7 +144,9 @@ export function DataTable<T>({
   })
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div 
+    data-component="KYP-table"
+    className={`space-y-4 ${className}`}>
      
       
       {/* Bulk Actions */}
@@ -238,10 +240,9 @@ export function DataTable<T>({
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onClick={(e) => {
+                          onChange={(e) => {
                             e.stopPropagation()
-                            const newCheckedState = !isSelected
-                            handleSelectItem(itemId, newCheckedState, e)
+                            handleSelectItem(itemId, e.target.checked, e)
                           }}
                           className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Plus, Loader2, X } from 'lucide-react'
+import { Button } from '../DesignSystem'
 import type { UserRole, LawFirm } from '../../lib/supabase'
 
 interface StakeholderFormProps {
@@ -45,12 +46,14 @@ export function StakeholderForm({
           <h3 className="text-lg font-semibold text-gray-900">
             {isEditing ? 'Edit Stakeholder' : 'Add New Stakeholder'}
           </h3>
-          <button
+          <Button
             onClick={onCancel}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            variant="ghost"
+            size="small"
+            className="text-gray-500"
           >
-            <X size={20} className="text-gray-500" />
-          </button>
+            <X size={20} />
+          </Button>
         </div>
         
         {/* Modal Content */}
@@ -157,22 +160,22 @@ export function StakeholderForm({
             </div>
             
             <div className="flex items-center gap-3">
-              <button 
+              <Button 
                 type="submit" 
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50"
+                loading={loading}
+                variant="primary"
               >
-                {loading && <Loader2 size={16} className="animate-spin" />}
                 {isEditing ? 'Update Stakeholder' : 'Add Stakeholder'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
+                variant="outline"
                 disabled={loading}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         </div>

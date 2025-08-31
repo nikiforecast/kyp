@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Users, Plus, Upload, FileText, X } from 'lucide-react'
+import { Button } from './DesignSystem'
 import type { Stakeholder, UserRole, LawFirm } from '../lib/supabase'
 import { StakeholderDetail } from './StakeholderDetail'
 import { StakeholderFilters } from './StakeholderManager/StakeholderFilters'
@@ -234,20 +235,20 @@ export function StakeholderManager({
           <p className="text-gray-600">Manage stakeholders and their roles within your workspace</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
+          <Button
             onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+            variant="secondary"
+            icon={Upload}
           >
-            <Upload size={20} />
             Import CSV
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowStakeholderForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+            variant="primary"
+            icon={Plus}
           >
-            <Plus size={20} />
             Create Stakeholder
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -272,15 +273,17 @@ export function StakeholderManager({
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">Import Stakeholders from CSV</h3>
-              <button
+              <Button
                 onClick={() => {
                   setShowImportModal(false)
                   setImportResults(null)
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                variant="ghost"
+                size="small"
+                className="text-gray-500"
               >
-                <X size={20} className="text-gray-500" />
-              </button>
+                <X size={20} />
+              </Button>
             </div>
             
             {/* Modal Content */}
@@ -320,15 +323,15 @@ export function StakeholderManager({
                       </div>
                     )}
                   </div>
-                  <button
+                  <Button
                     onClick={() => {
                       setImportResults(null)
                       setShowImportModal(false)
                     }}
-                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+                    variant="primary"
                   >
                     Close
-                  </button>
+                  </Button>
                 </div>
               )}
 
@@ -401,9 +404,15 @@ export function StakeholderManager({
                     <FileText size={48} className="mx-auto text-gray-400 mb-4" />
                     <h4 className="text-lg font-medium text-gray-900 mb-2">Upload CSV File</h4>
                     <p className="text-gray-600 mb-4">Select a CSV file to import stakeholders</p>
-                    <label className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all cursor-pointer">
-                      <Upload size={20} />
-                      Choose CSV File
+                    <label className="cursor-pointer">
+                      <Button
+                        variant="primary"
+                        icon={Upload}
+                        disabled={uploadingCSV}
+                        className="cursor-pointer"
+                      >
+                        Choose CSV File
+                      </Button>
                       <input
                         type="file"
                         accept=".csv"

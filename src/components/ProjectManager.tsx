@@ -3,7 +3,7 @@ import { FolderOpen, Plus, Loader2, Edit, Trash2, FileText, BookOpen, GitBranch,
 import { getProjectStakeholders, getProjectStakeholdersBatch } from '../lib/database/services/projectService'
 import type { Project, ProjectProgressStatus, UserStory, UserJourney, Design, Stakeholder, ResearchNote, ProblemOverview } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import { Button } from './DesignSystem/components'
+import { Button, Card, CardHeader, CardTitle, CardContent, CardFooter, CardStats, CardStatItem } from './DesignSystem'
 import { FormModal } from './DesignSystem/components/Modal'
 import { 
   DndContext, 
@@ -89,8 +89,8 @@ const StaggeredProjectCard = ({ project, projectData, index, ...props }: any) =>
 
 // Loading skeleton component
 const ProjectCardSkeleton = () => (
-  <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm animate-pulse">
-    <div className="flex items-start justify-between mb-4">
+  <Card className="animate-pulse">
+    <CardHeader>
       <div className="flex-1">
         <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
         <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -100,27 +100,29 @@ const ProjectCardSkeleton = () => (
         <div className="w-8 h-8 bg-gray-200 rounded"></div>
         <div className="w-8 h-8 bg-gray-200 rounded"></div>
       </div>
-    </div>
+    </CardHeader>
     
-    <div className="mb-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="h-4 bg-gray-200 rounded w-16"></div>
-        <div className="h-4 bg-gray-200 rounded w-12"></div>
+    <CardContent>
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="h-4 bg-gray-200 rounded w-16"></div>
+          <div className="h-4 bg-gray-200 rounded w-12"></div>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2"></div>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2"></div>
-    </div>
+      
+      <CardStats>
+        <div className="h-4 bg-gray-200 rounded"></div>
+        <div className="h-4 bg-gray-200 rounded"></div>
+        <div className="h-4 bg-gray-200 rounded"></div>
+        <div className="h-4 bg-gray-200 rounded"></div>
+      </CardStats>
+    </CardContent>
     
-    <div className="grid grid-cols-2 gap-4 mb-4">
-      <div className="h-4 bg-gray-200 rounded"></div>
-      <div className="h-4 bg-gray-200 rounded"></div>
-      <div className="h-4 bg-gray-200 rounded"></div>
-      <div className="h-4 bg-gray-200 rounded"></div>
-    </div>
-    
-    <div className="pt-4 border-t border-gray-100">
+    <CardFooter>
       <div className="h-4 bg-gray-200 rounded w-32"></div>
-    </div>
-  </div>
+    </CardFooter>
+  </Card>
 )
 
 // Memoized project card to prevent unnecessary re-renders
@@ -152,77 +154,64 @@ const SortableProjectCard = React.memo(function SortableProjectCard({
     <div 
       ref={setNodeRef}
       style={style}
-      className={`bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md hover:scale-[1.005] transition-all duration-600 ease-out cursor-pointer ${
-        isDragging ? 'opacity-50 scale-105' : ''
-      } ${isDragOverlay ? 'shadow-2xl' : ''}`}
-      onClick={() => onProjectClick(project)}
+      className={isDragOverlay ? 'shadow-2xl' : ''}
     >
-      {/* Drag Handle */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={(e) => {
+      <Card 
+        onClick={() => onProjectClick(project)}
+        className={isDragging ? 'opacity-50 scale-105' : ''}
+      >
+        <CardHeader
+          actions={[
+            {
+              icon: <Edit size={16} />,
+              onClick: (e) => {
+                e.stopPropagation()
+                onProjectEdit(project)
+              },
+              label: 'Edit Project'
+            },
+            {
+              icon: <Trash2 size={16} />,
+              onClick: (e) => {
+                e.stopPropagation()
+                onProjectDelete(project.id, project.name)
+              },
+              label: 'Delete Project',
+              variant: 'danger'
+            }
+          ]}
+          dragHandle={{
+            icon: <GripVertical size={16} />,
+            onMouseDown: (e) => {
+              e.preventDefault()
               e.stopPropagation()
-              onProjectEdit(project)
-            }}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-400"
-            title="Edit Project"
-          >
-            <Edit size={16} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onProjectDelete(project.id, project.name)
-            }}
-            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-400"
-            title="Delete Project"
-          >
-            <Trash2 size={16} />
-          </button>
-          <div
-            {...attributes}
-            {...listeners}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-400 cursor-grab active:cursor-grabbing"
-            title="Drag to reorder"
-          >
-            <GripVertical size={16} />
+              // Trigger the drag start from the useSortable hook
+              if (listeners?.onMouseDown) {
+                listeners.onMouseDown(e as any)
+              }
+            },
+            label: 'Drag to reorder'
+          }}
+        >
+          <CardTitle>{project.name}</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <CardStats>
+            <CardStatItem icon={<FileText size={16} />} label="Notes" value={projectData.notes.length} />
+            <CardStatItem icon={<BookOpen size={16} />} label="Stories" value={projectData.userStories.length} />
+            <CardStatItem icon={<GitBranch size={16} />} label="Journeys" value={projectData.userJourneys.length} />
+            <CardStatItem icon={<Palette size={16} />} label="Designs" value={projectData.designs.length} />
+          </CardStats>
+        </CardContent>
+
+        <CardFooter>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span>{projectData.stakeholderCount} Stakeholders</span>
           </div>
-        </div>
-      </div>
-
-
-
-      {/* Project Stats */}
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div className="flex items-center gap-2 text-gray-600">
-          <FileText size={16} />
-          <span>{projectData.notes.length} Notes</span>
-        </div>
-        <div className="flex items-center gap-2 text-gray-600">
-          <BookOpen size={16} />
-          <span>{projectData.userStories.length} Stories</span>
-        </div>
-        <div className="flex items-center gap-2 text-gray-600">
-          <GitBranch size={16} />
-          <span>{projectData.userJourneys.length} Journeys</span>
-        </div>
-        <div className="flex items-center gap-2 text-gray-600">
-          <Palette size={16} />
-          <span>{projectData.designs.length} Designs</span>
-        </div>
-      </div>
-
-      {/* Stakeholder Count */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-          <span>{projectData.stakeholderCount} Stakeholders</span>
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   )
 })
