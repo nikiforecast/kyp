@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { ArrowLeft, Check, Plus, Trash2, ExternalLink, CheckCircle, ClipboardList, X, Tag } from 'lucide-react'
+import { Button, IconButton, TextButton } from '../DesignSystem/components'
 import { CKEditorComponent } from '../CKEditorComponent'
 import { StakeholderAvatar } from '../common/StakeholderAvatar'
 import { AddStakeholdersModal } from '../common/AddStakeholdersModal'
@@ -187,13 +188,13 @@ export function NoteCreateForm({
   return (
     <div className="h-full flex flex-col w-full">
       <div className="bg-white border-b border-gray-200 p-6 -mx-6 -mt-6 mb-6">
-        <button
+        <TextButton
           onClick={onBack}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors mb-4"
+          icon={ArrowLeft}
+          className="mb-4"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Notes & Calls
-        </button>
+        </TextButton>
         
         <h1 className="text-2xl font-bold text-gray-900">Create New Note</h1>
       </div>
@@ -231,14 +232,13 @@ export function NoteCreateForm({
                   className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 {noteDate && (
-                  <button
-                    type="button"
+                  <IconButton
+                    icon={X}
+                    size="small"
+                    variant="ghost"
                     onClick={() => setNoteDate('')}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                    title="Clear date"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                  />
                 )}
               </div>
             </div>
@@ -251,14 +251,15 @@ export function NoteCreateForm({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">Summary</h2>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="small"
+                  icon={Plus}
                   onClick={() => setShowTemplateModal(true)}
-                  className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  className="text-blue-600 hover:bg-blue-50"
                 >
-                  <Plus size={14} />
                   Add Note Template
-                </button>
+                </Button>
               </div>
               <CKEditorComponent
                 value={summary}
@@ -288,26 +289,25 @@ export function NoteCreateForm({
                   placeholder="Enter decision..."
                 />
                 {decisionTexts.length > 1 && (
-                  <button
-                    type="button"
+                  <IconButton
+                    icon={Trash2}
+                    size="small"
+                    variant="ghost"
                     onClick={() => removeDecision(index)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Remove decision"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                    className="text-red-600 hover:bg-red-50"
+                  />
                 )}
               </div>
             ))}
             
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              icon={Plus}
               onClick={addDecision}
-              className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+              className="text-blue-600 hover:bg-blue-50"
             >
-              <Plus size={16} />
               Add Decision
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -352,14 +352,13 @@ export function NoteCreateForm({
                         </div>
                       )}
                     </div>
-                    <button
-                      type="button"
+                    <IconButton
+                      icon={Trash2}
+                      size="small"
+                      variant="ghost"
                       onClick={() => removeTask(index)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                      title="Remove task"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                      className="text-red-600 hover:bg-red-50"
+                    />
                   </div>
                 </div>
               ))}
@@ -382,14 +381,15 @@ export function NoteCreateForm({
             <h2 className="text-lg font-semibold text-gray-900">
             Tagged Stakeholders ({selectedStakeholderIds.length})
             </h2>
-            <button
-             type="button"
+            <Button
+              variant="ghost"
+              size="small"
+              icon={Plus}
               onClick={() => setShowAddStakeholderModal(true)}
-              className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              className="text-blue-600 hover:bg-blue-50"
             >
-              <Plus size={14} />
               Add Stakeholders
-            </button>
+            </Button>
           </div>
           
           <div className="space-y-2 overflow-y-auto">
@@ -409,14 +409,13 @@ export function NoteCreateForm({
                         <div className="font-medium text-gray-900">{stakeholder.name}</div>
                       </div>
                       
-                      <button
-                        type="button"
+                      <IconButton
+                        icon={X}
+                        size="small"
+                        variant="ghost"
                         onClick={() => toggleStakeholder(stakeholder.id)}
-                        className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
-                        title="Remove from note"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                        className="text-gray-400 hover:text-red-500 hover:bg-red-50"
+                      />
                     </div>
                   </div>
                 )
@@ -447,17 +446,13 @@ export function NoteCreateForm({
                     </div>
                   </div>
                   
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleRemoveLink(index)
-                    }}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Remove link"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <IconButton
+                    icon={Trash2}
+                    size="small"
+                    variant="ghost"
+                    onClick={() => handleRemoveLink(index)}
+                    className="text-red-600 hover:bg-red-50"
+                  />
                 </div>
               ))}
             </div>
@@ -470,51 +465,47 @@ export function NoteCreateForm({
             
             <div className="flex items-center gap-4 flex-wrap">
               {links.length === 0 && (
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  icon={Plus}
                   onClick={() => setShowAddLinkModal(true)}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50"
                 >
-                  <Plus size={16} />
                   Add Link
-                </button>
+                </Button>
               )}
               
               {tasks.length === 0 && (
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  icon={Plus}
                   onClick={() => setShowCreateTaskModal(true)}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50"
                 >
-                  <Plus size={16} />
                   Create Tasks
-                </button>
+                </Button>
               )}
 
               {linkedDesigns.length === 0 && (
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  icon={Plus}
                   onClick={() => setShowAddDesignLinkModal(true)}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50"
                 >
-                  <Plus size={16} />
                   Add Design Link
-                </button>
+                </Button>
               )}
 
               {selectedThemes.length === 0 && (
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  icon={Tag}
                   onClick={() => setShowTagThemeModal(true)}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50"
                 >
-                  <Tag size={16} />
                   Tag Theme
-                </button>
+                </Button>
               )}
             </div>
         
@@ -522,22 +513,22 @@ export function NoteCreateForm({
 
    
           <div className="flex items-center justify-end space-x-3 pb-6">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
               onClick={onBack}
               disabled={saving}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
+              icon={Check}
               disabled={saving || !name.trim()}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              loading={saving}
             >
-              <Check className="w-4 h-4 mr-1" />
               {saving ? 'Creating...' : 'Create Note'}
-            </button>
+            </Button>
           </div>
   
       </form>
@@ -574,12 +565,12 @@ export function NoteCreateForm({
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">Add New Task</h3>
-              <button
+              <IconButton
+                icon={X}
+                variant="ghost"
                 onClick={() => setShowCreateTaskModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X size={20} className="text-gray-500" />
-              </button>
+                className="text-gray-500 hover:bg-gray-100"
+              />
             </div>
             
             {/* Modal Content */}
@@ -605,12 +596,12 @@ export function NoteCreateForm({
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">Tag Theme</h3>
-              <button
+              <IconButton
+                icon={X}
+                variant="ghost"
                 onClick={() => setShowTagThemeModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X size={20} className="text-gray-500" />
-              </button>
+                className="text-gray-500 hover:bg-gray-100"
+              />
             </div>
             
             {/* Modal Content */}
@@ -627,20 +618,20 @@ export function NoteCreateForm({
             
             {/* Modal Footer */}
             <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setShowTagThemeModal(false)}
                 disabled={saving}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={() => setShowTagThemeModal(false)}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
                 Save
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -653,23 +644,24 @@ export function NoteCreateForm({
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">Add Design Link</h3>
-              <button
+              <IconButton
+                icon={X}
+                variant="ghost"
                 onClick={() => setShowAddDesignLinkModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X size={20} className="text-gray-500" />
-              </button>
+                className="text-gray-500 hover:bg-gray-100"
+              />
             </div>
             
             {/* Modal Content */}
             <div className="p-6">
               <p className="text-gray-600 mb-4">Design linking functionality will be available after note creation.</p>
-              <button
+              <Button
+                variant="primary"
                 onClick={() => setShowAddDesignLinkModal(false)}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                fullWidth
               >
                 OK
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -36,9 +36,9 @@ export function DashboardLayout({
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Compact Workspace Navigation */}
-      <div className="w-16 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+      <div className="w-16 bg-gray-900 border-r border-gray-700 flex flex-col flex-shrink-0">
         {/* Logo */}
-        <div className="p-3 border-b border-gray-200">
+        <div className="p-3 border-b border-gray-700">
           <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
             <span className="text-white font-bold text-sm">KYP</span>
           </div>
@@ -57,8 +57,8 @@ export function DashboardLayout({
                     onClick={() => onViewChange(item.id)}
                     className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all ${
                       isActive 
-                        ? 'bg-blue-50 text-blue-600 border border-blue-200' 
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-blue-600 text-white border border-blue-500' 
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                     }`}
                     title={item.label}
                   >
@@ -75,13 +75,13 @@ export function DashboardLayout({
         </nav>
 
         {/* Logout Button */}
-        <div className="p-2 border-t border-gray-200">
+        <div className="p-2 border-t border-gray-700">
           <button
             onClick={() => {
               console.log('🔵 DashboardLayout: Logout button clicked')
               onSignOut()
             }}
-            className="group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all text-gray-700 hover:bg-red-50 hover:text-red-600"
+            className="group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all text-gray-300 hover:bg-red-900 hover:text-red-200"
             title={user?.email ? `Logout of ${user.email}` : "Logout"}
           >
             <LogOut size={20} />
