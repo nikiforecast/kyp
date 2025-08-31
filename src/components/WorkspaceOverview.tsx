@@ -19,7 +19,7 @@ export function WorkspaceOverview({
 }: WorkspaceOverviewProps) {
   const stats = [
     { label: 'Projects', value: projects.length.toString(), icon: FolderOpen, color: 'bg-blue-500' },
-    { label: 'Stakeholders', value: stakeholders.length.toString(), icon: Users, color: 'bg-purple-500' },
+    { label: 'Stakeholders', value: stakeholders.length.toString(), icon: Users, color: '#6b42d1' },
     { label: 'Notes & Calls', value: notes.length.toString(), icon: FileText, color: 'bg-indigo-500' },
     { label: 'Team Members', value: workspaceUsers.filter(u => u.status === 'active').length.toString(), icon: Users, color: 'bg-emerald-500' },
     { label: 'Law Firms', value: lawFirms.length.toString(), icon: Building2, color: 'bg-orange-500' }
@@ -38,7 +38,10 @@ export function WorkspaceOverview({
           return (
             <div key={index} className="bg-white rounded-xl p-6 border border-gray-200">
               <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
+                <div 
+                  className="w-12 h-12 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: stat.color.startsWith('#') ? stat.color : undefined }}
+                >
                   <Icon size={24} className="text-white" />
                 </div>
               </div>

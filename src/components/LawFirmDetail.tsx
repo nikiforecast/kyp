@@ -113,9 +113,9 @@ export function LawFirmDetail({
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Summary</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Users size={20} className="text-purple-600" />
-              </div>
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(107, 66, 209, 0.1)' }}>
+          <Users size={20} style={{ color: '#6b42d1' }} />
+        </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{firmStakeholders.length}</p>
                 <p className="text-sm text-gray-600">Stakeholders</p>

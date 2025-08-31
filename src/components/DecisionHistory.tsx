@@ -39,7 +39,7 @@ export const DecisionHistory: React.FC<DecisionHistoryProps> = ({
       case 'user_story':
         return <BookOpen size={16} className="text-green-600" />
       case 'design':
-        return <Palette size={16} className="text-purple-600" />
+        return <Palette size={16} style={{ color: '#6b42d1' }} />
       default:
         return <FileText size={16} className="text-gray-600" />
     }
@@ -143,9 +143,14 @@ export const DecisionHistory: React.FC<DecisionHistoryProps> = ({
           onClick={() => setFilter('design')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             filter === 'design'
-              ? 'bg-purple-100 text-purple-700 border border-purple-200'
+              ? 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
               : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
           }`}
+          style={filter === 'design' ? {
+            backgroundColor: '#f3f0ff',
+            color: '#6b42d1',
+            border: '1px solid #ddd6fe'
+          } : {}}
         >
           Designs ({decisions.filter(d => d.source_type === 'design').length})
         </button>

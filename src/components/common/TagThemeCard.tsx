@@ -101,7 +101,7 @@ export function TagThemeCard({
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
       <div className="flex items-center gap-2 mb-4">
-        <Tag className="w-5 h-5 text-purple-600" />
+                        <Tag className="w-5 h-5" style={{ color: '#6b42d1' }} />
         <h3 className="text-lg font-semibold text-gray-900">
           Tag Theme ({selectedThemes.length})
         </h3>
@@ -144,7 +144,8 @@ export function TagThemeCard({
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => searchTerm && setShowDropdown(true)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ '--tw-ring-color': '#6b42d1' } as React.CSSProperties}
           placeholder="Search or create themes..."
           disabled={creating}
         />
@@ -182,17 +183,21 @@ export function TagThemeCard({
               <button
                 onClick={handleCreateTheme}
                 disabled={creating}
-                className="w-full px-4 py-3 text-left hover:bg-purple-50 transition-colors disabled:opacity-50"
+                className="w-full px-4 py-3 text-left transition-colors disabled:opacity-50"
+                style={{ 
+                  '--tw-bg-opacity': '0.05',
+                  backgroundColor: 'rgba(107, 66, 209, var(--tw-bg-opacity))'
+                } as React.CSSProperties}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Plus size={16} className="text-purple-600" />
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(107, 66, 209, 0.1)' }}>
+                    <Plus size={16} style={{ color: '#6b42d1' }} />
                   </div>
                   <div>
-                    <div className="font-medium text-purple-900">
+                    <div className="font-medium" style={{ color: '#6b42d1' }}>
                       {creating ? 'Creating...' : `Create "${searchTerm}"`}
                     </div>
-                    <div className="text-sm text-purple-600">
+                    <div className="text-sm" style={{ color: '#6b42d1' }}>
                       Create a new theme with this name
                     </div>
                   </div>

@@ -177,10 +177,7 @@ export function StakeholderTable({
 
   return (
     <div className="space-y-4">
-      {/* Shift-click hint */}
-      <div className="text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-md">
-        💡 <strong>Tip:</strong> Hold SHIFT and click checkboxes to select multiple rows at once
-      </div>
+     
       
       {/* Bulk Actions */}
       {selectedStakeholders.length > 0 && (

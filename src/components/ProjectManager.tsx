@@ -4,6 +4,7 @@ import { getProjectStakeholders, getProjectStakeholdersBatch } from '../lib/data
 import type { Project, ProjectProgressStatus, UserStory, UserJourney, Design, Stakeholder, ResearchNote, ProblemOverview } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { Button } from './DesignSystem/components'
+import { FormModal } from './DesignSystem/components/Modal'
 import { 
   DndContext, 
   closestCorners, 
@@ -544,103 +545,79 @@ export function ProjectManager({
         </Button>
       </div>
 
-      {/* Create Project Form */}
-      {showProjectForm && (
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New Project</h3>
-          <form onSubmit={handleCreateProject} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
-              <input
-                type="text"
-                value={newProject.name}
-                onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-                disabled={creatingProject}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Overview (Optional)</label>
-              <textarea
-                value={newProject.overview}
-                onChange={(e) => setNewProject({ ...newProject, overview: e.target.value })}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={creatingProject}
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                onClick={() => setShowProjectForm(false)}
-                variant="outline"
-                disabled={creatingProject}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={creatingProject}
-                loading={creatingProject}
-                icon={creatingProject ? Loader2 : undefined}
-                variant="primary"
-              >
-                Create Project
-              </Button>
-            </div>
-          </form>
+      {/* Create Project Modal */}
+      <FormModal
+        isOpen={showProjectForm}
+        onClose={() => setShowProjectForm(false)}
+        title="Create New Project"
+        onSubmit={handleCreateProject}
+        submitText="Create Project"
+        cancelText="Cancel"
+        loading={creatingProject}
+        size="md"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+            <input
+              type="text"
+              value={newProject.name}
+              onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+              disabled={creatingProject}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Overview (Optional)</label>
+            <textarea
+              value={newProject.overview}
+              onChange={(e) => setNewProject({ ...newProject, overview: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter a brief description of the project..."
+              disabled={creatingProject}
+            />
+          </div>
         </div>
-      )}
+      </FormModal>
 
-      {/* Edit Project Form */}
-      {editingProject && (
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Project</h3>
-          <form onSubmit={handleUpdateProject} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
-              <input
-                type="text"
-                value={editingProject.name}
-                onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-                disabled={updatingProject}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Overview (Optional)</label>
-              <textarea
-                value={editingProject.overview || ''}
-                onChange={(e) => setEditingProject({ ...editingProject, overview: e.target.value })}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={updatingProject}
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <Button 
-                type="submit" 
-                disabled={updatingProject}
-                loading={updatingProject}
-                icon={updatingProject ? Loader2 : undefined}
-                variant="primary"
-              >
-                Update Project
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setEditingProject(null)}
-                variant="outline"
-                disabled={updatingProject}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
+      {/* Edit Project Modal */}
+      <FormModal
+        isOpen={!!editingProject}
+        onClose={() => setEditingProject(null)}
+        title="Edit Project"
+        onSubmit={handleUpdateProject}
+        submitText="Update Project"
+        cancelText="Cancel"
+        loading={updatingProject}
+        size="md"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+            <input
+              type="text"
+              value={editingProject?.name || ''}
+              onChange={(e) => editingProject && setEditingProject({ ...editingProject, name: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+              disabled={updatingProject}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Overview (Optional)</label>
+            <textarea
+              value={editingProject?.overview || ''}
+              onChange={(e) => editingProject && setEditingProject({ ...editingProject, overview: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter a brief description of the project..."
+              disabled={updatingProject}
+            />
+          </div>
         </div>
-      )}
+      </FormModal>
 
       {/* Projects Grid with Drag and Drop */}
       <DndContext

@@ -27,9 +27,9 @@ export function AiSummaryModal({ aiSummary, onSave, onClose, saving }: AiSummary
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Sparkles size={20} className="text-purple-600" />
-            </div>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(107, 66, 209, 0.1)' }}>
+          <Sparkles size={20} style={{ color: '#6b42d1' }} />
+        </div>
             <h3 className="text-lg font-semibold text-gray-900">Use AI Summary</h3>
           </div>
           <button
@@ -75,7 +75,8 @@ export function AiSummaryModal({ aiSummary, onSave, onClose, saving }: AiSummary
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50"
+            style={{ backgroundColor: '#6b42d1' }}
           >
             <Sparkles size={16} />
             {saving ? 'Adding Summary...' : 'Add Summary'}

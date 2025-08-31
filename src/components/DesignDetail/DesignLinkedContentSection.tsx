@@ -26,7 +26,7 @@ export function DesignLinkedContentSection({
               {linkedUserStories.map((story) => (
                 <div key={story.id} className="p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-2 mb-1">
-                    <BookOpen size={14} className="text-purple-600" />
+                    <BookOpen size={14} style={{ color: '#6b42d1' }} />
                     <p className="font-medium text-gray-900">{story.name}</p>
                   </div>
                   <p className="text-xs text-gray-500">

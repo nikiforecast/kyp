@@ -148,8 +148,8 @@ export function ThemeDetail({ themeShortId, onBack }: ThemeDetailProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="bg-white rounded-xl p-6 border border-gray-200">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <BookOpen size={20} className="text-purple-600" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(107, 66, 209, 0.1)' }}>
+                  <BookOpen size={20} style={{ color: '#6b42d1' }} />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900">{userStories.length}</p>
@@ -211,8 +211,8 @@ export function ThemeDetail({ themeShortId, onBack }: ThemeDetailProps) {
                       className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
                       onClick={() => handleUserStoryClick(story)}
                     >
-                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <BookOpen size={20} className="text-purple-600" />
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(107, 66, 209, 0.1)' }}>
+                        <BookOpen size={20} style={{ color: '#6b42d1' }} />
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">{story.name}</p>

@@ -162,7 +162,7 @@ export function ThemeTable({ themes, onEdit, onDelete, onRowClick }: ThemeTableP
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <BookOpen size={16} className="text-purple-600" />
+                      <BookOpen size={16} style={{ color: '#6b42d1' }} />
                       <span className="text-sm text-gray-900">{theme.contentCounts.userStories}</span>
                     </div>
                   </td>

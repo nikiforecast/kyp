@@ -78,12 +78,12 @@ export function ColorShowcase() {
               </div>
             </div>
             <div className="space-y-3">
-              <div className="h-20 bg-purple-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-semibold">Purple 500</span>
+              <div className="h-20 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#6b42d1' }}>
+                <span className="text-white font-semibold">Primary Purple</span>
               </div>
               <div className="text-center">
-                <p className="font-medium text-gray-900">Secondary Purple</p>
-                <p className="text-sm text-gray-600">bg-purple-500</p>
+                <p className="font-medium text-gray-900">Primary Purple</p>
+                <p className="text-sm text-gray-600">#6b42d1</p>
                 <p className="text-xs text-gray-500">Special elements, premium features</p>
               </div>
             </div>

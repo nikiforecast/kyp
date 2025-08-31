@@ -328,7 +328,7 @@ export function EditDesignModal({
                           disabled={saving}
                         />
                         <div className="flex items-center gap-2 flex-1">
-                          <BookOpen size={16} className="text-purple-600" />
+                          <BookOpen size={16} style={{ color: '#6b42d1' }} />
                           <span className="text-sm text-gray-700 truncate">{story.name}</span>
                         </div>
                       </label>

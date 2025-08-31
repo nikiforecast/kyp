@@ -2,3 +2,5 @@ export { Button, FloatingButton, IconButton, TextButton, GroupButton, SplitButto
 export { ButtonShowcase } from './ButtonShowcase'
 export { TypographyShowcase } from './TypographyShowcase'
 export { ColorShowcase } from './ColorShowcase'
+export { Modal, ConfirmModal, FormModal } from './Modal'
+export { ModalShowcase } from './ModalShowcase'

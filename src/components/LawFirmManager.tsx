@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
-import { Plus, Upload, Trash2, Shield } from 'lucide-react'
+import { Plus, Upload, Trash2, Shield, Star, Building2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from './DesignSystem/components'
 import { LawFirmForm } from './LawFirmManager/LawFirmForm'
-import { LawFirmTable } from './LawFirmManager/LawFirmTable'
 import { LawFirmFilters } from './LawFirmManager/LawFirmFilters'
+import { DataTable, Column } from './DesignSystem/components/DataTable'
+import { ConfirmModal } from './DesignSystem/components/Modal'
 import type { LawFirm } from '../lib/supabase'
 import { getCurrentUserRole } from '../lib/database'
+import { getStructureTagStyles } from '../utils/structureTagStyles'
 import type { Stakeholder, UserRole } from '../lib/supabase'
 
 interface LawFirmManagerProps {
@@ -46,6 +49,8 @@ export function LawFirmManager({
   const [searchTerm, setSearchTerm] = useState('')
   const [structureFilter, setStructureFilter] = useState('')
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [selectedLawFirms, setSelectedLawFirms] = useState<string[]>([])
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
 
   // Load user role on component mount
   React.useEffect(() => {
@@ -105,9 +110,20 @@ export function LawFirmManager({
     reader.readAsText(file)
   }
 
-  const handleDeleteAll = async () => {
-    if (window.confirm('Are you sure you want to delete ALL law firms? This action cannot be undone.')) {
-      await onDeleteAll()
+
+
+  const handleBulkDelete = async () => {
+    if (selectedLawFirms.length === 0) return
+    
+    try {
+      // Delete each selected law firm
+      for (const id of selectedLawFirms) {
+        await onDeleteLawFirm(id)
+      }
+      setSelectedLawFirms([])
+      setShowBulkDeleteModal(false)
+    } catch (error) {
+      console.error('Error deleting law firms:', error)
     }
   }
 
@@ -144,18 +160,14 @@ export function LawFirmManager({
           <p className="text-gray-600">Manage law firms and their organizational structure</p>
         </div>
         <div className="flex items-center gap-3">
-          {userRole === 'owner' && lawFirms.length > 0 && (
-            <button
-              onClick={handleDeleteAll}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all"
+          <label className="cursor-pointer">
+            <Button
+              variant="secondary"
+              icon={Upload}
+              className="bg-green-600 hover:bg-green-700"
             >
-              <Trash2 size={20} />
-              Delete All
-            </button>
-          )}
-          <label className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all cursor-pointer">
-            <Upload size={20} />
-            Import CSV
+              Import CSV
+            </Button>
             <input
               type="file"
               accept=".csv"
@@ -163,13 +175,13 @@ export function LawFirmManager({
               className="hidden"
             />
           </label>
-          <button
+          <Button
+            variant="primary"
+            icon={Plus}
             onClick={() => setShowLawFirmForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
           >
-            <Plus size={20} />
             Add Law Firm
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -236,11 +248,59 @@ export function LawFirmManager({
         />
       )}
 
-      <LawFirmTable
-        lawFirms={filteredLawFirms}
+      {/* Law Firms Table */}
+      <DataTable
+        data={filteredLawFirms}
+        columns={[
+          {
+            key: 'name',
+            header: 'Law Firm Name',
+            sortable: true,
+            render: (firm) => (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-900">{firm.name}</span>
+                {firm.top_4 && (
+                  <Star size={16} className="text-yellow-500 fill-current" />
+                )}
+              </div>
+            )
+          },
+          {
+            key: 'structure',
+            header: 'Structure',
+            sortable: true,
+            render: (firm) => (
+              <span 
+                className={getStructureTagStyles(firm.structure).className}
+                style={getStructureTagStyles(firm.structure).style}
+              >
+                {firm.structure === 'centralised' ? 'Centralised' : 'Decentralised'}
+              </span>
+            )
+          }
+        ]}
+        sortableFields={['name', 'structure']}
+        getItemId={(firm) => firm.id}
+        selectable={true}
+        selectedItems={selectedLawFirms}
+        onSelectionChange={setSelectedLawFirms}
+        onRowClick={handleRowClick}
         onEdit={setEditingLawFirm}
         onDelete={onDeleteLawFirm}
-        onRowClick={handleRowClick}
+        onBulkDelete={() => setShowBulkDeleteModal(true)}
+        emptyStateIcon={Building2}
+        emptyStateMessage="No law firms match your current filters."
+      />
+
+      {/* Bulk Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showBulkDeleteModal}
+        onClose={() => setShowBulkDeleteModal(false)}
+        message={`Are you sure you want to delete ${selectedLawFirms.length} law firm${selectedLawFirms.length > 1 ? 's' : ''}? This action cannot be undone.`}
+        confirmText="Confirm"
+        cancelText="Cancel"
+        onConfirm={handleBulkDelete}
+        variant="danger"
       />
     </div>
   )

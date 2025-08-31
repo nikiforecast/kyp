@@ -223,7 +223,7 @@ export function DesignsSection({ projectId, onSelectDesign }: DesignsSectionProp
                   <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
                     {linkedCounts.userStories > 0 && (
                       <div className="flex items-center gap-1">
-                        <BookOpen size={12} className="text-purple-600" />
+                        <BookOpen size={12} style={{ color: '#6b42d1' }} />
                         <span>{linkedCounts.userStories} User Stor{linkedCounts.userStories === 1 ? 'y' : 'ies'}</span>
                       </div>
                     )}

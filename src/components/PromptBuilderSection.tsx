@@ -11,7 +11,9 @@ export function PromptBuilderSection() {
 
       {/* Coming Soon Card */}
       <div className="bg-white rounded-xl p-12 border border-gray-200 text-center">
-        <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="w-20 h-20 bg-gradient-to-br rounded-full flex items-center justify-center mx-auto mb-6" style={{
+          background: 'linear-gradient(to bottom right, #6b42d1, #2563eb)'
+        }}>
           <Zap size={32} className="text-white" />
         </div>
         
@@ -46,9 +48,9 @@ export function PromptBuilderSection() {
           </div>
           
           <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <span className="text-purple-600 text-sm font-bold">🎯</span>
-            </div>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: 'rgba(107, 66, 209, 0.1)' }}>
+          <span className="text-sm font-bold" style={{ color: '#6b42d1' }}>🎯</span>
+        </div>
             <h4 className="font-medium text-gray-900 mb-1">Targeted Research</h4>
             <p className="text-xs text-gray-600">Context-aware prompts based on project data</p>
           </div>

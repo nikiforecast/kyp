@@ -1,5 +1,6 @@
 import React from 'react'
 import { X, Loader2, Star } from 'lucide-react'
+import { Button, IconButton } from '../DesignSystem/components'
 import type { LawFirm } from '../../lib/supabase'
 
 interface LawFirmFormProps {
@@ -32,12 +33,12 @@ export function LawFirmForm({
           <h3 className="text-lg font-semibold text-gray-900">
             {isEditing ? 'Edit Law Firm' : 'Add New Law Firm'}
           </h3>
-          <button
+          <IconButton
+            icon={X}
+            variant="ghost"
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X size={20} className="text-gray-500" />
-          </button>
+            className="text-gray-500 hover:bg-gray-100"
+          />
         </div>
         
         {/* Modal Content */}
@@ -104,22 +105,22 @@ export function LawFirmForm({
             
 
             <div className="flex items-center gap-3">
-              <button 
+              <Button 
                 type="submit" 
+                variant="primary"
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50"
+                loading={loading}
               >
-                {loading && <Loader2 size={16} className="animate-spin" />}
                 {isEditing ? 'Update Law Firm' : 'Add Law Firm'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
                 disabled={loading}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         </div>
