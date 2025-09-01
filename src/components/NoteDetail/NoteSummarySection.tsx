@@ -1,27 +1,39 @@
 import React, { useState, useEffect } from 'react'
 import { Edit, Check, X } from 'lucide-react'
-import { CKEditorComponent } from '../CKEditorComponent'
+import { BlockNoteEditor } from '../DesignSystem/components/BlockNoteEditor'
+import { htmlToBlockNoteBlocks, blockNoteBlocksToHtml, type BlockNoteBlock } from '../../utils/blocknoteConverters'
 
 interface NoteSummarySectionProps {
   summary: string | null
   onSave: (summary: string) => Promise<void>
+  summary_blocknote?: BlockNoteBlock[] | null
+  onSaveJSON?: (blocks: BlockNoteBlock[] | null) => Promise<void>
   saving: boolean
 }
 
-export function NoteSummarySection({ summary, onSave, saving }: NoteSummarySectionProps) {
+export function NoteSummarySection({ summary, onSave, saving, summary_blocknote, onSaveJSON }: NoteSummarySectionProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [editValue, setEditValue] = useState('')
+  const [editBlocks, setEditBlocks] = useState<BlockNoteBlock[] | null>(null)
 
   // Update editValue when summary changes or when starting to edit
   useEffect(() => {
-    if (isEditing) {
-      setEditValue(summary || '')
+    if (!isEditing) return
+    if (summary_blocknote && Array.isArray(summary_blocknote)) {
+      setEditBlocks(summary_blocknote)
+    } else {
+      setEditBlocks(htmlToBlockNoteBlocks(summary || ''))
     }
-  }, [summary, isEditing])
+  }, [summary, isEditing, summary_blocknote])
 
   const handleSave = async () => {
     try {
-      await onSave(editValue)
+      // Persist JSON if supported
+      if (onSaveJSON) {
+        await onSaveJSON(editBlocks || [])
+      }
+      // Also persist HTML fallback for legacy paths
+      const html = blockNoteBlocksToHtml(editBlocks || [])
+      await onSave(html)
       setIsEditing(false)
       // The summary prop will be updated by the parent component after successful save
     } catch (error) {
@@ -32,7 +44,7 @@ export function NoteSummarySection({ summary, onSave, saving }: NoteSummarySecti
   }
 
   const handleCancel = () => {
-    setEditValue('')
+    setEditBlocks(null)
     setIsEditing(false)
   }
 
@@ -44,7 +56,12 @@ export function NoteSummarySection({ summary, onSave, saving }: NoteSummarySecti
         {!isEditing && (
           <button
             onClick={() => {
-              setEditValue(summary || '')
+              // Initialize blocks when entering edit mode
+              if (summary_blocknote && Array.isArray(summary_blocknote)) {
+                setEditBlocks(summary_blocknote)
+              } else {
+                setEditBlocks(htmlToBlockNoteBlocks(summary || ''))
+              }
               setIsEditing(true)
             }}
             className="flex items-center px-3 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
@@ -57,10 +74,9 @@ export function NoteSummarySection({ summary, onSave, saving }: NoteSummarySecti
 
       {isEditing ? (
         <div className="space-y-4">
-          <CKEditorComponent
-            value={editValue}
-            onChange={(value) => setEditValue(value)}
-            placeholder="Enter summary..."
+          <BlockNoteEditor
+            initialContent={editBlocks || []}
+            onChange={(blocks) => setEditBlocks(blocks)}
           />
           
           <div className="flex items-center space-x-2">
@@ -92,7 +108,7 @@ export function NoteSummarySection({ summary, onSave, saving }: NoteSummarySecti
                 __html: summary
                   .replace(/<p>/g, '')
                   .replace(/<\/p>/g, '\n')
-                  .replace(/<br\s*\/?>/g, '\n')
+                  .replace(/<br\s*\/?>(?![^]*<\/)/g, '\n')
                   .replace(/&nbsp;/g, ' ')
                   .trim()
               }} 

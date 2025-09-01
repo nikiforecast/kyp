@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ArrowLeft, Check, Plus, Trash2, ExternalLink, CheckCircle, ClipboardList, X, Tag } from 'lucide-react'
 import { Button, IconButton, TextButton } from '../DesignSystem/components'
-import { CKEditorComponent } from '../CKEditorComponent'
+import { BlockNoteEditor } from '../DesignSystem/components/BlockNoteEditor'
+import { htmlToBlockNoteBlocks, blockNoteBlocksToHtml, type BlockNoteBlock } from '../../utils/blocknoteConverters'
 import { StakeholderAvatar } from '../common/StakeholderAvatar'
 import { AddStakeholdersModal } from '../common/AddStakeholdersModal'
 import { AddLinkModal } from '../common/AddLinkModal'
@@ -41,6 +42,7 @@ interface NoteCreateFormProps {
     links: NoteLink[]
     tasks: TaskData[]
     themeIds: string[]
+    summaryBlocks?: BlockNoteBlock[]
   }) => Promise<void>
 }
 
@@ -59,6 +61,7 @@ export function NoteCreateForm({
 }: NoteCreateFormProps) {
   const [name, setName] = useState('')
   const [summary, setSummary] = useState('')
+  const [summaryBlocks, setSummaryBlocks] = useState<BlockNoteBlock[] | null>(null)
   const [noteDate, setNoteDate] = useState(new Date().toISOString().split('T')[0])
   const [selectedStakeholderIds, setSelectedStakeholderIds] = useState<string[]>([])
   const [decisionTexts, setDecisionTexts] = useState<string[]>([''])
@@ -78,6 +81,11 @@ export function NoteCreateForm({
   // Linked designs state
   const [linkedDesigns] = useState<Design[]>([])
 
+  // Keep blocks in sync when summary HTML changes externally
+  useEffect(() => {
+    setSummaryBlocks(htmlToBlockNoteBlocks(summary))
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -86,16 +94,19 @@ export function NoteCreateForm({
     setSaving(true)
     try {
       console.log('🔗 NoteCreateForm: Creating note with links:', links)
+      // Use the blocks directly to preserve BlockNote structure
+      const htmlSummary = summaryBlocks ? blockNoteBlocksToHtml(summaryBlocks) : summary
       await onCreate({
         name: name.trim(),
-        summary,
+        summary: htmlSummary,
         nativeNotes: '',
         note_date: noteDate,
         stakeholderIds: selectedStakeholderIds,
         decision_text: decisionTexts.filter(decision => decision.trim() !== ''),
         links: links,
         tasks: tasks,
-        themeIds: selectedThemes.map(theme => theme.id)
+        themeIds: selectedThemes.map(theme => theme.id),
+        summaryBlocks: summaryBlocks || undefined
       })
       // After successful creation, go back to the notes dashboard
       onBack()
@@ -120,7 +131,9 @@ export function NoteCreateForm({
     if (templateBody.trim()) {
       // Add template content to existing summary with proper separation
       const separator = summary.trim() ? '<br><br>' : ''
-      setSummary(summary + separator + templateBody)
+      const nextHtml = summary + separator + templateBody
+      setSummary(nextHtml)
+      setSummaryBlocks(htmlToBlockNoteBlocks(nextHtml))
     }
   }
 
@@ -261,10 +274,13 @@ export function NoteCreateForm({
                   Add Note Template
                 </Button>
               </div>
-              <CKEditorComponent
-                value={summary}
-                onChange={setSummary}
-                placeholder="Enter summary..."
+              <BlockNoteEditor
+                initialContent={summaryBlocks || htmlToBlockNoteBlocks(summary)}
+                onChange={(blocks) => {
+                  setSummaryBlocks(blocks)
+                  // Convert blocks to HTML for the summary state (for backward compatibility)
+                  setSummary(blockNoteBlocksToHtml(blocks))
+                }}
               />
             </div>
           </div>

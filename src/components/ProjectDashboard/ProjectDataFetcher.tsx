@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { SupabaseAuthError } from '../../lib/supabase'
+import { type BlockNoteBlock } from '../../utils/blocknoteConverters'
 import {
   getStakeholders,
   getUserRoles,
@@ -388,6 +389,7 @@ export function ProjectDataFetcher({
       assignedToUserId?: string
     }>
     themeIds: string[]
+    summaryBlocks?: BlockNoteBlock[]
   }) => {
     try {
       console.log('🔗 ProjectDataFetcher: Creating note with links:', noteData.links)
@@ -399,7 +401,9 @@ export function ProjectDataFetcher({
         Array.isArray(noteData.stakeholderIds) ? noteData.stakeholderIds : [],
         noteData.decision_text,
         noteData.note_date,
-        noteData.links
+        noteData.links,
+        noteData.themeIds,
+        noteData.summaryBlocks
       )
       if (note) {
         // Assign stakeholders to project after note creation
