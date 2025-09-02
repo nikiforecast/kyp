@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FileText, BookOpen, Palette, Calendar, User, ExternalLink } from 'lucide-react'
+import { FileText, BookOpen, Palette, Calendar, User, ExternalLink, Target } from 'lucide-react'
 import { getProjectDecisions, type ProjectDecision } from '../lib/database/services/decisionService'
 import type { Project } from '../lib/supabase'
 
@@ -14,7 +14,7 @@ export const DecisionHistory: React.FC<DecisionHistoryProps> = ({
 }) => {
   const [decisions, setDecisions] = useState<ProjectDecision[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'note' | 'user_story' | 'design'>('all')
+  const [filter, setFilter] = useState<'all' | 'note' | 'user_story' | 'design' | 'example'>('all')
 
   useEffect(() => {
     const fetchDecisions = async () => {
@@ -40,6 +40,8 @@ export const DecisionHistory: React.FC<DecisionHistoryProps> = ({
         return <BookOpen size={16} className="text-green-600" />
       case 'design':
         return <Palette size={16} style={{ color: '#6b42d1' }} />
+      case 'example':
+        return <Target size={16} className="text-orange-600" />
       default:
         return <FileText size={16} className="text-gray-600" />
     }
@@ -53,6 +55,8 @@ export const DecisionHistory: React.FC<DecisionHistoryProps> = ({
         return 'User Story'
       case 'design':
         return 'Design'
+      case 'example':
+        return 'Example'
       default:
         return 'Unknown'
     }
@@ -66,6 +70,8 @@ export const DecisionHistory: React.FC<DecisionHistoryProps> = ({
         return 'bg-green-50 text-green-700 border-green-200'
       case 'design':
         return 'bg-purple-50 text-purple-700 border-purple-200'
+      case 'example':
+        return 'bg-orange-50 text-orange-700 border-orange-200'
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200'
     }
@@ -153,6 +159,16 @@ export const DecisionHistory: React.FC<DecisionHistoryProps> = ({
           } : {}}
         >
           Designs ({decisions.filter(d => d.source_type === 'design').length})
+        </button>
+        <button
+          onClick={() => setFilter('example')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            filter === 'example'
+              ? 'bg-orange-100 text-orange-700 border border-orange-200'
+              : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+          }`}
+        >
+          Examples ({decisions.filter(d => d.source_type === 'example').length})
         </button>
       </div>
 

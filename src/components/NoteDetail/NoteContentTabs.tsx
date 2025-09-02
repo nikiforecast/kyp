@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { CKEditorComponent } from '../CKEditorComponent'
+import { BlockNoteEditor } from '../DesignSystem/components/BlockNoteEditor'
+import { htmlToBlockNoteBlocks, type BlockNoteBlock } from '../../utils/blocknoteConverters'
+import { updateResearchNote } from '../../lib/database'
 import type { ResearchNote } from '../../lib/supabase'
 
 interface NoteContentTabsProps {
@@ -14,21 +16,27 @@ export function NoteContentTabs({
   saving
 }: NoteContentTabsProps) {
   const [editingSummary, setEditingSummary] = useState(false)
-  const [summaryEditValue, setSummaryEditValue] = useState('')
-  const [displaySummary, setDisplaySummary] = useState('')
+  const [editBlocks, setEditBlocks] = useState<BlockNoteBlock[] | null>(null)
+  const [viewBlocks, setViewBlocks] = useState<BlockNoteBlock[]>([])
+  const viewKey = React.useMemo(() => JSON.stringify(viewBlocks), [viewBlocks])
 
-  // Sync edit values when note changes
+  const hasJSON = Array.isArray((note as any).summary_blocknote) && (note as any).summary_blocknote.length > 0
+
+  // Initialize / sync from note
   useEffect(() => {
-    setSummaryEditValue(note.summary || '')
-    setDisplaySummary(note.summary || '')
+    if (hasJSON) {
+      setViewBlocks((note as any).summary_blocknote)
+    } else {
+      setViewBlocks([])
+    }
+    if (!editingSummary) setEditBlocks(null)
   }, [note])
 
   const handleSaveSummary = async () => {
     try {
-      const updatedNote = await onUpdateSummary(summaryEditValue)
-      if (updatedNote) {
-        setSummaryEditValue(updatedNote.summary || '')
-        setDisplaySummary(updatedNote.summary || '')
+      if (editBlocks) {
+        await updateResearchNote(note.id, { summary_blocknote: editBlocks } as any)
+        setViewBlocks(editBlocks)
       }
       setEditingSummary(false)
     } catch (error) {
@@ -44,11 +52,9 @@ export function NoteContentTabs({
         <div>
           {editingSummary ? (
             <div className="space-y-4">
-              <CKEditorComponent
-                value={summaryEditValue}
-                onChange={setSummaryEditValue}
-                placeholder="Enter summary..."
-                disabled={saving}
+              <BlockNoteEditor
+                initialContent={editBlocks || (hasJSON ? (note as any).summary_blocknote : htmlToBlockNoteBlocks(note.summary || ''))}
+                onChange={(blocks) => setEditBlocks(blocks)}
               />
               
               <div className="flex items-center space-x-2">
@@ -62,7 +68,7 @@ export function NoteContentTabs({
                 
                 <button
                   onClick={() => {
-                    setSummaryEditValue(displaySummary)
+                    setEditBlocks(null)
                     setEditingSummary(false)
                   }}
                   disabled={saving}
@@ -75,20 +81,21 @@ export function NoteContentTabs({
           ) : (
             <div className="flex items-start gap-4">
               <div className="flex-1">
-                <div className="prose max-w-none text-gray-700">
-                  {displaySummary ? (
-                    <div 
-                      className="whitespace-pre-line leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: displaySummary }}
-                    />
-                  ) : (
-                    <p className="text-gray-500 italic">No summary available</p>
-                  )}
-                </div>
+                {hasJSON ? (
+                  <BlockNoteEditor key={viewKey} initialContent={viewBlocks} editable={false} />
+                ) : (
+                  <div className="prose max-w-none text-gray-700">
+                    {note.summary ? (
+                      <div className="leading-relaxed" dangerouslySetInnerHTML={{ __html: note.summary }} />
+                    ) : (
+                      <p className="text-gray-500 italic">No summary available</p>
+                    )}
+                  </div>
+                )}
               </div>
               <button
                 onClick={() => {
-                  setSummaryEditValue(displaySummary)
+                  setEditBlocks(hasJSON ? (note as any).summary_blocknote : htmlToBlockNoteBlocks(note.summary || ''))
                   setEditingSummary(true)
                 }}
                 className="flex-shrink-0 flex items-center px-3 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"

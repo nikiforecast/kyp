@@ -406,3 +406,35 @@ export interface UserProjectPreference {
   created_at: string
   updated_at: string
 }
+
+export interface Example {
+  id: string
+  project_id: string
+  short_id: number
+  actor: string
+  goal: string
+  entry_point: string
+  actions: string
+  error: string
+  outcome: string
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ExampleUserRole {
+  id: string
+  example_id: string
+  user_role_id: string
+  created_at: string
+}
+
+export interface ExampleComment {
+  id: string
+  example_id: string
+  user_id: string
+  comment_text: string
+  is_decision: boolean
+  created_at: string
+  updated_at: string
+}

@@ -59,7 +59,7 @@ export function Button({
   const variantClasses = {
     primary: 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:shadow-lg focus:ring-blue-500 border border-blue-500/20',
     secondary: 'bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white hover:shadow-lg focus:ring-teal-500 border border-teal-500/20',
-    outline: 'bg-transparent border-2 border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600 focus:ring-blue-500',
+    outline: 'bg-transparent border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-600 focus:ring-blue-500',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-500'
   }
   

@@ -20,6 +20,7 @@ import {
 import { PriorityTag, getPriorityTagStyles } from '../utils/priorityTagStyles.tsx'
 import { UserRoleTag } from './common/UserRoleTag'
 import { UserStoryCard } from './UserStoryCard'
+import { Button } from './DesignSystem/components/Button'
 import { 
   getUserStories, 
   createUserStory, 
@@ -518,13 +519,13 @@ export function UserStoriesSection({
               <option value="priority">Priority</option>
             </select>
           </div>
-          <button
+          <Button
             onClick={() => setIsCreatingStory(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+            variant="primary"
+            icon={Plus}
           >
-            <Plus size={20} />
             Create Story
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -1,10 +1,10 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
-import type { ResearchNote, UserStory, Design } from '../../supabase'
+import type { ResearchNote, UserStory, Design, Example } from '../../supabase'
 
 export interface ProjectDecision {
   id: string
   content: string
-  source_type: 'note' | 'user_story' | 'design'
+  source_type: 'note' | 'user_story' | 'design' | 'example'
   source_id: string
   source_name: string
   source_short_id?: number
@@ -14,7 +14,6 @@ export interface ProjectDecision {
 }
 
 export const getProjectDecisions = async (projectId: string): Promise<ProjectDecision[]> => {
-  console.log('🔵 getProjectDecisions called for project:', projectId)
   
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
@@ -127,8 +126,31 @@ export const getProjectDecisions = async (projectId: string): Promise<ProjectDec
         }
       })
       
+      // Get decisions from examples (example_comments localStorage)
+      const exampleComments = JSON.parse(localStorage.getItem('kyp_example_comments') || '[]')
+      const examples = JSON.parse(localStorage.getItem('kyp_examples') || '[]') as Example[]
+      const projectExamples = examples.filter(example => example.project_id === projectId)
+      
+      exampleComments.forEach((comment: any) => {
+        if (comment.is_decision && comment.comment_text && comment.comment_text.trim()) {
+          const example = projectExamples.find(ex => ex.id === comment.example_id)
+          if (example) {
+            decisions.push({
+              id: `example-${comment.id}`,
+              content: comment.comment_text,
+              source_type: 'example',
+              source_id: comment.example_id,
+              source_name: `Example #${example.short_id}`,
+              source_short_id: example.short_id,
+              created_at: comment.created_at,
+              updated_at: comment.updated_at,
+              user_id: comment.user_id
+            })
+          }
+        }
+      })
+      
       // Sort by created_at (newest first)
-      console.log('🔵 Total decisions found (localStorage):', decisions.length)
       return decisions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     } catch (error) {
       console.error('Error fetching decisions locally:', error)
@@ -150,10 +172,8 @@ export const getProjectDecisions = async (projectId: string): Promise<ProjectDec
     if (noteError) throw noteError
 
     if (notes) {
-      console.log('🔵 Found', notes.length, 'notes with decision_text')
       notes.forEach((note: ResearchNote) => {
         if (note.decision_text && note.decision_text.length > 0) {
-          console.log(`🔵 Note "${note.name}" has ${note.decision_text.length} decisions:`, note.decision_text)
           note.decision_text.forEach((decisionText, index) => {
             if (decisionText && decisionText.trim()) {
               // Parse timestamp|text format if present
@@ -175,8 +195,6 @@ export const getProjectDecisions = async (projectId: string): Promise<ProjectDec
           })
         }
       })
-    } else {
-      console.log('🔵 No notes found with decision_text')
     }
     
     // Get decisions from user stories
@@ -190,7 +208,6 @@ export const getProjectDecisions = async (projectId: string): Promise<ProjectDec
     if (userStoryError) throw userStoryError
 
     if (userStories) {
-      console.log('🔵 Found', userStories.length, 'user stories with decision_text')
       userStories.forEach((story: UserStory) => {
         if (story.decision_text && story.decision_text.length > 0) {
           story.decision_text.forEach((decisionText, index) => {
@@ -249,7 +266,6 @@ export const getProjectDecisions = async (projectId: string): Promise<ProjectDec
     if (designError) throw designError
 
     if (designs) {
-      console.log('🔵 Found', designs.length, 'designs with decision_text')
       designs.forEach((design: Design) => {
         if (design.decision_text && design.decision_text.length > 0) {
           design.decision_text.forEach((decisionText, index) => {
@@ -275,8 +291,43 @@ export const getProjectDecisions = async (projectId: string): Promise<ProjectDec
       })
     }
     
+    // Get decisions from examples (example_comments table where is_decision = true)
+    const { data: exampleComments, error: exampleCommentError } = await supabase
+      .from('example_comments')
+      .select(`
+        *,
+        examples!inner(
+          id,
+          project_id,
+          short_id,
+          actor
+        )
+      `)
+      .eq('examples.project_id', projectId)
+      .eq('is_decision', true)
+      .order('created_at', { ascending: false })
+
+    if (exampleCommentError) throw exampleCommentError
+
+    if (exampleComments) {
+      exampleComments.forEach((comment: any) => {
+        if (comment.comment_text && comment.comment_text.trim()) {
+          decisions.push({
+            id: `example-${comment.id}`,
+            content: comment.comment_text,
+            source_type: 'example',
+            source_id: comment.example_id,
+            source_name: `Example #${comment.examples.short_id}`,
+            source_short_id: comment.examples.short_id,
+            created_at: comment.created_at,
+            updated_at: comment.updated_at,
+            user_id: comment.user_id
+          })
+        }
+      })
+    }
+    
     // Sort by created_at (newest first)
-    console.log('🔵 Total decisions found:', decisions.length)
     return decisions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   } catch (error) {
     console.error('Error fetching project decisions:', error)

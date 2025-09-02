@@ -1,6 +1,6 @@
 import React from 'react'
 import { Check, X } from 'lucide-react'
-import { FolderOpen, Users, FileText, Edit, AlertTriangle, TrendingUp, CheckSquare, Star, BarChart, Palette, ArrowRight } from 'lucide-react'
+import { FolderOpen, Users, FileText, Edit, AlertTriangle, TrendingUp, CheckSquare, Star, BarChart, Palette, ArrowRight, BookOpen } from 'lucide-react'
 import { StakeholderAvatar } from './common/StakeholderAvatar'
 import { StructureTag } from '../utils/structureTagStyles'
 import { CopyLinkButton } from './common/CopyLinkButton'
@@ -18,6 +18,7 @@ interface ProjectOverviewProps {
   userRoles: UserRole[]
   lawFirms: LawFirm[]
   allProjectProgressStatus: ProjectProgressStatus[]
+  examplesCount?: number
   onProblemOverviewChange?: (updates: Partial<ProblemOverview>) => void
   onSaveProblemOverview?: (updates?: Partial<ProblemOverview>) => Promise<void>
   projectTasks: Task[]
@@ -34,6 +35,7 @@ export function ProjectOverview({
   userRoles, 
   lawFirms,
   allProjectProgressStatus,
+  examplesCount = 0,
   projectTasks,
   onProblemOverviewChange,
   onSaveProblemOverview,
@@ -395,6 +397,8 @@ export function ProjectOverview({
               })()}
             </div>
           </div>
+          
+          
         </div>
       </div>
 

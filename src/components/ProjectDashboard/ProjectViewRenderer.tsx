@@ -26,6 +26,8 @@ import { ResearchNotesSection } from '../ResearchNotesSection'
 import { PromptBuilderSection } from '../PromptBuilderSection'
 import { UserFlowsSection } from '../UserFlowsSection'
 import { UserStoriesSection } from '../UserStoriesSection'
+import { ExamplesSection } from '../ExamplesSection'
+import { ExampleDetailPage } from '../ExampleDetail/ExampleDetailPage'
 import { StakeholderDetail } from '../StakeholderDetail'
 import { UserStoryDetail } from '../UserStoryDetail'
 import { UserJourneyEditor } from '../UserJourneyEditor'
@@ -35,6 +37,12 @@ import { AssetDetail } from '../AssetDetail'
 import { ProjectTaskManager } from '../ProjectTaskManager'
 import { ProjectProgressSection } from '../ProjectProgressSection'
 import { DecisionHistory } from '../DecisionHistory'
+import { ExampleForm } from '../ExampleForm'
+import { 
+  createExample, 
+  updateExample, 
+  deleteExample
+} from '../../lib/database'
 import type { 
   Project, 
   Stakeholder, 
@@ -47,6 +55,7 @@ import type {
   WorkspaceUser,
   UserJourney,
   UserPermission,
+  Example,
   NoteTemplate,
   ProjectProgressStatus,
   Task,
@@ -90,6 +99,7 @@ interface ProjectViewRendererProps {
   noteStakeholders: Record<string, string[]>
   projectTasks: Task[]
   allProjectProgressStatus: ProjectProgressStatus[]
+  examplesCount: number
   
   // Handlers
   onProblemOverviewChange: (updates: Partial<ProblemOverview>) => void
@@ -172,6 +182,7 @@ export function ProjectViewRenderer({
   noteStakeholders,
   projectTasks,
   allProjectProgressStatus,
+  examplesCount,
   onProblemOverviewChange,
   onSaveProblemOverview,
   onAssignStakeholder,
@@ -213,6 +224,8 @@ export function ProjectViewRenderer({
   const [selectedUserStoryRoles, setSelectedUserStoryRoles] = useState<string[]>(initialUserStoryRoleIds)
   const [selectedUserJourney, setSelectedUserJourney] = useState<UserJourney | null>(initialSelectedUserJourney)
   const [selectedDesign, setSelectedDesign] = useState<Design | null>(initialSelectedDesign)
+  const [selectedExample, setSelectedExample] = useState<Example | null>(null)
+  const [editingExample, setEditingExample] = useState<Example | null>(null)
   const [refreshingStakeholders, setRefreshingStakeholders] = useState(false)
 
   // Handle changes to initialSelectedDesign after component mount
@@ -316,12 +329,66 @@ export function ProjectViewRenderer({
     setCurrentView('notes')
   }
 
+  const handleViewExample = (example: Example) => {
+    setSelectedExample(example)
+    setCurrentView('example-detail')
+  }
+
+  const handleBackFromExample = () => {
+    setSelectedExample(null)
+    setCurrentView('examples')
+  }
+
+  const handleEditExample = (example: Example) => {
+    setEditingExample(example)
+  }
+
+  const handleCreateExample = async (exampleData: Omit<Example, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      const newExample = await createExample(exampleData)
+      // Refresh the examples list by going back to examples view
+      setCurrentView('examples')
+    } catch (error) {
+      console.error('Error creating example:', error)
+      throw error
+    }
+  }
+
+  const handleUpdateExample = async (exampleData: Omit<Example, 'id' | 'created_at' | 'updated_at'>) => {
+    if (!editingExample) {
+      throw new Error('No example being edited')
+    }
+    
+    try {
+      const updatedExample = await updateExample(editingExample.id, exampleData)
+      setSelectedExample(updatedExample)
+      setEditingExample(null)
+    } catch (error) {
+      console.error('Error updating example:', error)
+      throw error
+    }
+  }
+
+  const handleDeleteExample = async (example: Example) => {
+    try {
+      await deleteExample(example.id)
+      handleBackFromExample()
+    } catch (error) {
+      console.error('Error deleting example:', error)
+    }
+  }
+
+  const handleCloseForm = () => {
+    setEditingExample(null)
+  }
+
   const menuItems = [
     { id: 'dashboard', label: 'Overview', icon: FolderOpen },
     { id: 'notes', label: 'Notes & Calls', icon: FileText },  
     { id: 'user-stories', label: 'User Stories', icon: BookOpen },
     { id: 'user-flows', label: 'User Journeys', icon: Workflow },    
     { id: 'designs', label: 'Designs', icon: Palette },    
+    { id: 'examples', label: 'Examples', icon: BookOpen },
     { id: 'decision-history', label: 'Decision History', icon: Clock },
    
     { id: 'project-tasks', label: 'Project Tasks', icon: CheckSquare },
@@ -450,6 +517,20 @@ export function ProjectViewRenderer({
       )
     }
 
+    // If an example is selected for detail view, show the example detail component
+    if (currentView === 'example-detail' && selectedExample) {
+      return (
+        <ExampleDetailPage
+          example={selectedExample}
+          onBack={handleBackFromExample}
+          onEdit={() => handleEditExample(selectedExample)}
+          onDelete={() => handleDeleteExample(selectedExample)}
+          user={user}
+          availableUsers={workspaceUsers}
+        />
+      )
+    }
+
     switch (currentView) {
       case 'dashboard':
         return (
@@ -462,6 +543,7 @@ export function ProjectViewRenderer({
             userRoles={userRoles}
             lawFirms={lawFirms}
             allProjectProgressStatus={allProjectProgressStatus}
+            examplesCount={examplesCount}
             onProblemOverviewChange={onProblemOverviewChange}
             onSaveProblemOverview={onSaveProblemOverview}
             projectTasks={projectTasks}
@@ -551,6 +633,13 @@ export function ProjectViewRenderer({
             lawFirms={lawFirms}
           />
         )
+      case 'examples':
+        return (
+          <ExamplesSection 
+            projectId={project.id}
+            onViewExample={handleViewExample}
+          />
+        )
       case 'project-tasks':
         return (
           <ProjectTaskManager 
@@ -606,6 +695,7 @@ export function ProjectViewRenderer({
             userRoles={userRoles}
             lawFirms={lawFirms}
             allProjectProgressStatus={allProjectProgressStatus}
+            examplesCount={examplesCount}
             onProblemOverviewChange={onProblemOverviewChange}
             onSaveProblemOverview={onSaveProblemOverview}
             projectTasks={projectTasks}
@@ -670,7 +760,8 @@ export function ProjectViewRenderer({
                 (item.id === 'notes' && currentView === 'note-detail') ||
                 (item.id === 'user-stories' && currentView === 'user-story-detail') ||
                 (item.id === 'user-flows' && currentView === 'user-journey-detail') ||
-                (item.id === 'stakeholders' && currentView === 'stakeholder-detail')
+                (item.id === 'stakeholders' && currentView === 'stakeholder-detail') ||
+                (item.id === 'examples' && (currentView === 'examples' || currentView === 'example-detail'))
               
               return (
                 <li key={item.id}>
@@ -694,10 +785,20 @@ export function ProjectViewRenderer({
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto" ref={mainContentRef}>
-        <div className={currentView === 'stakeholder-detail' && selectedStakeholder || currentView === 'user-story-detail' || currentView === 'user-story-create' || (selectedUserStory && currentView !== 'user-stories') || currentView === 'design-detail' || currentView === 'note-detail' ? '' : 'p-6'}>
+        <div className={currentView === 'stakeholder-detail' && selectedStakeholder || currentView === 'user-story-detail' || currentView === 'user-story-create' || (selectedUserStory && currentView !== 'user-stories') || currentView === 'design-detail' || currentView === 'note-detail' || currentView === 'example-detail' ? '' : 'p-6'}>
           {renderContent()}
         </div>
       </main>
+
+      {/* Example Form Modal */}
+      {editingExample && (
+        <ExampleForm
+          projectId={project.id}
+          example={editingExample}
+          onSubmit={editingExample ? handleUpdateExample : handleCreateExample}
+          onClose={handleCloseForm}
+        />
+      )}
     </div>
   )
 }

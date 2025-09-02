@@ -176,11 +176,11 @@ export function DataTable<T>({
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 {selectable && (
-                  <th className="px-6 py-3 text-left">
+                  <th className="px-6 py-3 text-left" style={{ width: '50px' }}>
                     <input
                       type="checkbox"
                       checked={isAllSelected}
@@ -216,7 +216,7 @@ export function DataTable<T>({
                   </th>
                 ))}
                 {(onEdit || onDelete) && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: '80px' }}>
                     Actions
                   </th>
                 )}
@@ -228,15 +228,31 @@ export function DataTable<T>({
                 const isSelected = selectedItems.includes(itemId)
                 
                 return (
-                  <tr 
-                    key={itemId} 
+                                    <tr
+                    key={itemId}
                     className={`transition-colors ${
                       onRowClick ? 'hover:bg-gray-50 cursor-pointer' : ''
                     }`}
-                    onClick={() => onRowClick?.(item)}
+                    onClick={(e) => {
+                      // Only trigger row click if not clicking on checkbox, buttons, or other interactive elements
+                      const target = e.target as HTMLElement
+                      if (!target.closest('input[type="checkbox"]') && 
+                          !target.closest('button') && 
+                          !target.closest('a') &&
+                          !target.closest('[role="button"]')) {
+                        onRowClick?.(item)
+                      }
+                    }}
                   >
                     {selectable && (
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td 
+                        className="px-6 py-4 whitespace-nowrap cursor-pointer" 
+                        style={{ width: '50px' }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleSelectItem(itemId, !isSelected, e)
+                        }}
+                      >
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -244,7 +260,7 @@ export function DataTable<T>({
                             e.stopPropagation()
                             handleSelectItem(itemId, e.target.checked, e)
                           }}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 pointer-events-none"
                         />
                       </td>
                     )}
@@ -252,40 +268,37 @@ export function DataTable<T>({
                       <td 
                         key={column.key}
                         className="px-6 py-4 whitespace-nowrap"
+                        style={{ width: column.width }}
                       >
                         {column.render(item)}
                       </td>
                     ))}
                     {(onEdit || onDelete) && (
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" style={{ width: '80px' }}>
                         <div className="flex items-center gap-2">
                           {onEdit && (
-                                                       <Button
-                             variant="ghost"
-                             size="small"
-                             icon={Edit}
-                             onClick={(e) => {
-                               e.stopPropagation()
-                               onEdit(item)
-                             }}
-                             className="text-blue-600 hover:text-blue-900"
-                           >
-                             Edit
-                           </Button>
+                            <Button
+                              variant="ghost"
+                              size="small"
+                              icon={Edit}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onEdit(item)
+                              }}
+                              className="text-blue-600 hover:text-blue-900"
+                            />
                           )}
                           {onDelete && (
                             <Button
                               variant="ghost"
                               size="small"
-                              icon={Building2}
+                              icon={Trash2}
                               onClick={(e) => {
                                 e.stopPropagation()
                                 onDelete(item)
                               }}
                               className="text-red-600 hover:text-red-900"
-                            >
-                              Delete
-                            </Button>
+                            />
                           )}
                         </div>
                       </td>

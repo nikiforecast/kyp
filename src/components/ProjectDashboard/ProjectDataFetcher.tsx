@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { SupabaseAuthError } from '../../lib/supabase'
+import { type BlockNoteBlock } from '../../utils/blocknoteConverters'
 import {
   getStakeholders,
   getUserRoles,
@@ -32,7 +33,9 @@ import {
   getNoteTemplates,
   getAllProjectProgressStatus,
   getTasks,
-  createTask
+  createTask,
+  getExamples,
+  getExamplesCount
 } from '../../lib/database'
 import { ProjectViewRenderer } from './ProjectViewRenderer'
 import type { 
@@ -50,7 +53,8 @@ import type {
   NoteTemplate,
   ProjectProgressStatus,
   Task,
-  UserStoryComment
+  UserStoryComment,
+  Example
 } from '../../lib/supabase'
 
 interface ProjectDataFetcherProps {
@@ -97,6 +101,8 @@ export function ProjectDataFetcher({
   const [notes, setNotes] = useState<ResearchNote[]>([])
   const [userStories, setUserStories] = useState<UserStory[]>([])
   const [storyRoles, setStoryRoles] = useState<Record<string, string[]>>({})
+  const [examples, setExamples] = useState<Example[]>([])
+  const [examplesCount, setExamplesCount] = useState(0)
   const [userJourneys, setUserJourneys] = useState<UserJourney[]>([])
   const [userJourneyStakeholders, setUserJourneyStakeholders] = useState<Record<string, string[]>>({})
   const [themes, setThemes] = useState<Theme[]>([])
@@ -147,7 +153,9 @@ export function ProjectDataFetcher({
         userStoriesData,
         userJourneysData,
         themesData,
-        noteTemplatesData
+        noteTemplatesData,
+        examplesData,
+        examplesCountData
       ] = await Promise.all([
         getStakeholders(),
         getUserRoles(),
@@ -157,7 +165,9 @@ export function ProjectDataFetcher({
         getUserStories(project.id),
         getUserJourneys(project.id),
         getThemes(),
-        getNoteTemplates()
+        getNoteTemplates(),
+        getExamples(project.id),
+        getExamplesCount(project.id)
       ])
       
       setAllStakeholders(stakeholdersData)
@@ -168,6 +178,8 @@ export function ProjectDataFetcher({
       setUserJourneys(userJourneysData)
       setThemes(themesData)
       setNoteTemplates(noteTemplatesData)
+      setExamples(examplesData)
+      setExamplesCount(examplesCountData)
       
       // Filter notes for this specific project
       const projectNotes = researchNotesData.filter(note => note.project_id === project.id)
@@ -388,6 +400,7 @@ export function ProjectDataFetcher({
       assignedToUserId?: string
     }>
     themeIds: string[]
+    summaryBlocks?: BlockNoteBlock[]
   }) => {
     try {
       console.log('🔗 ProjectDataFetcher: Creating note with links:', noteData.links)
@@ -399,7 +412,9 @@ export function ProjectDataFetcher({
         Array.isArray(noteData.stakeholderIds) ? noteData.stakeholderIds : [],
         noteData.decision_text,
         noteData.note_date,
-        noteData.links
+        noteData.links,
+        noteData.themeIds,
+        noteData.summaryBlocks
       )
       if (note) {
         // Assign stakeholders to project after note creation
@@ -697,58 +712,59 @@ export function ProjectDataFetcher({
   }
 
   return (
-    <ProjectViewRenderer
-      project={project}
-      initialSelectedNote={initialSelectedNote}
-      initialView={initialView}
-      initialSelectedUserStory={initialSelectedUserStory}
-      initialSelectedUserJourney={initialSelectedUserJourney}
-      initialUserStoryRoleIds={initialUserStoryRoleIds}
-      initialSelectedDesign={initialSelectedDesign}
-      workspaceUsers={workspaceUsers}
-      user={user}
-      userStoryComments={userStoryComments}
-      onBack={onBack}
-      onNavigateToWorkspace={onNavigateToWorkspace}
-      onSignOut={onSignOut}
-      loading={loading}
-      allStakeholders={allStakeholders}
-      userRoles={userRoles}
-      userPermissions={userPermissions}
-      lawFirms={lawFirms}
-      assignedStakeholders={assignedStakeholders}
-      memoizedAssignedStakeholders={memoizedAssignedStakeholders}
-      getUnassignedStakeholders={getUnassignedStakeholders}
-      notes={notes}
-      userStories={userStories}
-      storyRoles={storyRoles}
-      userJourneys={userJourneys}
-      userJourneyStakeholders={userJourneyStakeholders}
-      themes={themes}
-      noteTemplates={noteTemplates}
-      problemOverview={problemOverview}
-      noteStakeholders={noteStakeholders}
-      projectTasks={projectTasks}
-      allProjectProgressStatus={allProjectProgressStatus}
-      onProblemOverviewChange={handleProblemOverviewChange}
-      onSaveProblemOverview={handleSaveProblemOverview}
-      onAssignStakeholder={handleAssignStakeholder}
-      onRemoveStakeholder={handleRemoveStakeholder}
-      onRemoveStakeholderFromNoteAndConditionallyProject={handleRemoveStakeholderFromNoteAndConditionallyProject}
-      onCreateNote={handleCreateNote}
-      onThemeCreate={handleThemeCreate}
-      onUpdateNote={handleUpdateNote}
-      onDeleteNote={handleDeleteNote}
-      onAddUserStoryComment={handleAddUserStoryComment}
-      onEditUserStoryComment={handleEditUserStoryComment}
-      onDeleteUserStoryComment={handleDeleteUserStoryComment}
-      onCreateUserStory={handleCreateUserStory}
-      onUpdateUserStory={handleUpdateUserStory}
-      onDeleteUserStory={handleDeleteUserStory}
-      onStoriesReordered={handleStoriesReordered}
-      onCreateTask={onCreateTask || handleCreateTaskForUserStory}
-      onUpdateTask={onUpdateTask || handleUpdateTaskForUserStory}
-      onDeleteTask={onDeleteTask || handleDeleteTaskForUserStory}
-    />
+            <ProjectViewRenderer
+          project={project}
+          initialSelectedNote={initialSelectedNote}
+          initialView={initialView}
+          initialSelectedUserStory={initialSelectedUserStory}
+          initialSelectedUserJourney={initialSelectedUserJourney}
+          initialUserStoryRoleIds={initialUserStoryRoleIds}
+          initialSelectedDesign={initialSelectedDesign}
+          workspaceUsers={workspaceUsers}
+          user={user}
+          userStoryComments={userStoryComments}
+          onBack={onBack}
+          onNavigateToWorkspace={onNavigateToWorkspace}
+          onSignOut={onSignOut}
+          loading={loading}
+          allStakeholders={allStakeholders}
+          userRoles={userRoles}
+          userPermissions={userPermissions}
+          lawFirms={lawFirms}
+          assignedStakeholders={assignedStakeholders}
+          memoizedAssignedStakeholders={memoizedAssignedStakeholders}
+          getUnassignedStakeholders={getUnassignedStakeholders}
+          notes={notes}
+          userStories={userStories}
+          storyRoles={storyRoles}
+          userJourneys={userJourneys}
+          userJourneyStakeholders={userJourneyStakeholders}
+          themes={themes}
+          noteTemplates={noteTemplates}
+          problemOverview={problemOverview}
+          noteStakeholders={noteStakeholders}
+          projectTasks={projectTasks}
+          allProjectProgressStatus={allProjectProgressStatus}
+          examplesCount={examplesCount}
+          onProblemOverviewChange={handleProblemOverviewChange}
+          onSaveProblemOverview={handleSaveProblemOverview}
+          onAssignStakeholder={handleAssignStakeholder}
+          onRemoveStakeholder={handleRemoveStakeholder}
+          onRemoveStakeholderFromNoteAndConditionallyProject={handleRemoveStakeholderFromNoteAndConditionallyProject}
+          onCreateNote={handleCreateNote}
+          onThemeCreate={handleThemeCreate}
+          onUpdateNote={handleUpdateNote}
+          onDeleteNote={handleDeleteNote}
+          onAddUserStoryComment={handleAddUserStoryComment}
+          onEditUserStoryComment={handleEditUserStoryComment}
+          onDeleteUserStoryComment={handleDeleteUserStoryComment}
+          onCreateUserStory={handleCreateUserStory}
+          onUpdateUserStory={handleUpdateUserStory}
+          onDeleteUserStory={handleDeleteUserStory}
+          onStoriesReordered={handleStoriesReordered}
+          onCreateTask={onCreateTask || handleCreateTaskForUserStory}
+          onUpdateTask={onUpdateTask || handleUpdateTaskForUserStory}
+          onDeleteTask={onDeleteTask || handleDeleteTaskForUserStory}
+        />
   )
 }

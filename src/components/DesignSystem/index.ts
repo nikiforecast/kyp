@@ -15,3 +15,6 @@ export {
   CardStatItem 
 } from './components/Card'
 export { CardShowcase } from './components/CardShowcase'
+export { BlockNoteEditor } from './components/BlockNoteEditor'
+export { BlockNoteShowcase } from './components/BlockNoteShowcase'
+export { BlockNoteUsageExample } from './components/BlockNoteUsageExample'

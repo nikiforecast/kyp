@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
 import type { ResearchNote, NoteLink } from '../../supabase'
+import { htmlToBlockNoteBlocks, blockNoteBlocksToHtml, type BlockNoteBlock } from '../../../utils/blocknoteConverters'
 
 export const getResearchNotes = async (): Promise<ResearchNote[]> => {
   if (!isSupabaseConfigured || !supabase) {
@@ -63,7 +64,8 @@ export const createResearchNote = async (
   decisionTexts: string[] = [],
   noteDate?: string,
   links: Array<{ name: string; url: string }> = [],
-  themeIds: string[] = []
+  themeIds: string[] = [],
+  summaryBlocks?: BlockNoteBlock[]
 ): Promise<ResearchNote | null> => {
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
@@ -136,6 +138,9 @@ export const createResearchNote = async (
     }
   }
 
+  // Use provided blocks or convert from HTML if blocks not provided
+  const initialBlocks: BlockNoteBlock[] | undefined = summaryBlocks || (summary ? htmlToBlockNoteBlocks(summary) : undefined)
+
   try {
     const { data, error } = await supabase
       .from('research_notes')
@@ -145,7 +150,8 @@ export const createResearchNote = async (
         summary,
         native_notes: nativeNotes,
         note_date: noteDate,
-        decision_text: decisionTexts.length > 0 ? decisionTexts : null
+        decision_text: decisionTexts.length > 0 ? decisionTexts : null,
+        summary_blocknote: initialBlocks ? (initialBlocks as any) : null
       }])
       .select()
       .maybeSingle()
@@ -235,6 +241,7 @@ export const updateResearchNote = async (
     native_notes?: string; 
     note_date?: string; 
     decision_text?: string[]
+    summary_blocknote?: BlockNoteBlock[] | null
   },
   stakeholderIds?: string[],
   themeIds?: string[]
@@ -315,7 +322,7 @@ export const updateResearchNote = async (
       console.log('🔵 updateResearchNote (Supabase): Performing update operation with field changes')
       const { data: updateData, error } = await supabase
         .from('research_notes')
-        .update(updates)
+        .update(updates as any)
         .eq('id', noteId)
         .select()
         .order('id', { ascending: true })
