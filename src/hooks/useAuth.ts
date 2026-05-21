@@ -20,9 +20,14 @@ const LOCAL_USER_KEY = 'kyp_local_user'
 
 // Local authentication is no longer supported - Google OAuth only
 
-// Check if email is allowed (must be @legl.com)
+// Default: require @legl.com (historic behaviour). Set VITE_RESTRICT_LOGIN_TO_LEGL_DOMAIN=false
+// in .env / Netlify to allow any verified Google email.
+const restrictLoginToLeglDomain =
+  import.meta.env.VITE_RESTRICT_LOGIN_TO_LEGL_DOMAIN !== 'false'
+
 const isEmailAllowed = (email: string | null | undefined): boolean => {
-  if (!email) return false
+  if (!email?.trim()) return false
+  if (!restrictLoginToLeglDomain) return true
   return email.toLowerCase().endsWith('@legl.com')
 }
 
