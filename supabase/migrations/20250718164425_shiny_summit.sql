@@ -30,6 +30,14 @@ DROP POLICY IF EXISTS "Workspace owners and admins can update users" ON workspac
 DROP POLICY IF EXISTS "Workspace owners and admins can remove users" ON workspace_users;
 
 -- Create simple, non-recursive policies
+DROP POLICY IF EXISTS "Allow authenticated users to view workspaces" ON workspaces;
+DROP POLICY IF EXISTS "Allow authenticated users to create workspaces" ON workspaces;
+DROP POLICY IF EXISTS "Allow workspace creators to update their workspaces" ON workspaces;
+DROP POLICY IF EXISTS "Allow authenticated users to manage projects" ON projects;
+DROP POLICY IF EXISTS "Allow authenticated users to manage stakeholders" ON stakeholders;
+DROP POLICY IF EXISTS "Allow authenticated users to manage research notes" ON research_notes;
+DROP POLICY IF EXISTS "Allow users to view workspace memberships" ON workspace_users;
+DROP POLICY IF EXISTS "Allow authenticated users to manage workspace users" ON workspace_users;
 
 -- Workspaces: Allow authenticated users to see all workspaces (simplified)
 CREATE POLICY "Allow authenticated users to view workspaces"

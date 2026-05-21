@@ -69,7 +69,7 @@ export const createPlatform = async (
       .from('workspace_users')
       .select('workspace_id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     const { data, error } = await supabase
       .from('platforms')

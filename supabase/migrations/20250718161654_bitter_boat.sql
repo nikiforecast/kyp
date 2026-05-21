@@ -44,6 +44,17 @@ DROP POLICY IF EXISTS "Allow authenticated users" ON workspaces;
 DROP POLICY IF EXISTS "Allow authenticated users" ON projects;
 DROP POLICY IF EXISTS "Allow authenticated users" ON stakeholders;
 DROP POLICY IF EXISTS "Allow authenticated users" ON research_notes;
+DROP POLICY IF EXISTS "Users can view workspaces they belong to" ON workspaces;
+DROP POLICY IF EXISTS "Users can update workspaces they own or admin" ON workspaces;
+DROP POLICY IF EXISTS "Users can create workspaces" ON workspaces;
+DROP POLICY IF EXISTS "Users can view projects in their workspaces" ON projects;
+DROP POLICY IF EXISTS "Users can manage projects in their workspaces" ON projects;
+DROP POLICY IF EXISTS "Users can view stakeholders in their workspaces" ON stakeholders;
+DROP POLICY IF EXISTS "Users can manage stakeholders in their workspaces" ON stakeholders;
+DROP POLICY IF EXISTS "Users can view research notes in their workspaces" ON research_notes;
+DROP POLICY IF EXISTS "Users can manage research notes in their workspaces" ON research_notes;
+DROP POLICY IF EXISTS "Users can view workspace members in their workspaces" ON workspace_users;
+DROP POLICY IF EXISTS "Owners and admins can manage workspace users" ON workspace_users;
 
 -- Workspace policies - users can only access workspaces they belong to
 CREATE POLICY "Users can view workspaces they belong to"

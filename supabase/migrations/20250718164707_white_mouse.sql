@@ -15,5 +15,10 @@
 ALTER TABLE workspace_users ALTER COLUMN user_id DROP NOT NULL;
 
 -- Add a check constraint to ensure either user_id is provided OR status is pending
-ALTER TABLE workspace_users ADD CONSTRAINT user_id_or_pending_check 
-CHECK (user_id IS NOT NULL OR status = 'pending');
+DO $$
+BEGIN
+  ALTER TABLE workspace_users ADD CONSTRAINT user_id_or_pending_check
+    CHECK (user_id IS NOT NULL OR status = 'pending');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

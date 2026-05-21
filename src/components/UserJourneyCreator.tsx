@@ -590,7 +590,7 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
                 .from('workspace_users')
                 .select('workspace_id')
                 .eq('user_id', user.id)
-                .single()
+                .maybeSingle()
               
               if (workspaceUser) {
                 setWorkspaceId(workspaceUser.workspace_id)
@@ -815,7 +815,7 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
             .from('workspace_users')
             .select('workspace_id')
             .eq('user_id', user.id)
-            .single()
+            .maybeSingle()
           
           if (workspaceUser) {
             await createLawFirm(

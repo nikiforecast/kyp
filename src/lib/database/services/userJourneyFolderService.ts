@@ -19,9 +19,12 @@ async function getWorkspaceIdForCurrentUser(explicitWorkspaceId?: string): Promi
     .from('workspace_users')
     .select('workspace_id')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
   if (workspaceError) {
     throw new Error(`Failed to get workspace: ${workspaceError.message}`)
+  }
+  if (!workspaceUser?.workspace_id) {
+    throw new Error('No workspace membership found for this user')
   }
   return workspaceUser.workspace_id
 }
