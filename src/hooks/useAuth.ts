@@ -20,10 +20,17 @@ const LOCAL_USER_KEY = 'kyp_local_user'
 
 // Local authentication is no longer supported - Google OAuth only
 
-// Default: require @legl.com (historic behaviour). Set VITE_RESTRICT_LOGIN_TO_LEGL_DOMAIN=false
-// in .env / Netlify to allow any verified Google email.
-const restrictLoginToLeglDomain =
-  import.meta.env.VITE_RESTRICT_LOGIN_TO_LEGL_DOMAIN !== 'false'
+// When unset/false-ish: accept any OAuth user with an email (avoids forgetting env at build).
+// Set VITE_RESTRICT_LOGIN_TO_LEGL_DOMAIN=true (or 1 / yes) to limit sign-in to @legl.com (internal deployments).
+function parseRestrictLeglEmails(): boolean {
+  const raw = import.meta.env.VITE_RESTRICT_LOGIN_TO_LEGL_DOMAIN
+  if (raw === undefined || raw === null) return false
+  const v = String(raw).trim().toLowerCase()
+  if (v === '' || v === 'false' || v === '0' || v === 'no' || v === 'off') return false
+  return v === 'true' || v === '1' || v === 'yes' || v === 'on'
+}
+
+const restrictLoginToLeglDomain = parseRestrictLeglEmails()
 
 const isEmailAllowed = (email: string | null | undefined): boolean => {
   if (!email?.trim()) return false

@@ -13,9 +13,9 @@ VITE_SUPABASE_ANON_KEY=eyJ...your-anon-key...
 VITE_AUTH0_DOMAIN=your-tenant.auth0.com
 VITE_AUTH0_CLIENT_ID=your-client-id
 
-# Login: omit or leave unset to allow only @legl.com Google accounts (default).
-# Set to false to allow any domain (personal Gmail, etc.):
-VITE_RESTRICT_LOGIN_TO_LEGL_DOMAIN=false
+# Login: omit (or leave false-ish) → any Google identity with email can sign in.
+# Set strictly for internal tooling only → only @legl.com:
+# VITE_RESTRICT_LOGIN_TO_LEGL_DOMAIN=true
 
 # DO NOT add SUPABASE_SERVICE_ROLE_KEY here!
 # It's server-side only and should never be in client code
