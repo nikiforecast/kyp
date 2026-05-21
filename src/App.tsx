@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useLocation, useSearchParams } from 'react-router-dom'
+import { useParams, useLocation, useSearchParams, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { LoginForm } from './components/LoginForm'
 import { Dashboard } from './components/Dashboard'
 import { LoadingState } from './components/DesignSystem/components/LoadingSpinner'
 
 function App() {
-  const { user, loading } = useAuth()
+  const { user, loading, needsPasswordReset, restrictLoginToLeglDomain } = useAuth()
   const params = useParams()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [authError, setAuthError] = useState<string | null>(null)
+  const [emailVerified, setEmailVerified] = useState(false)
 
-  // Check for Auth0 callback errors
   useEffect(() => {
     const error = searchParams.get('error')
     const errorDescription = searchParams.get('error_description')
-    
+
     if (error) {
       setAuthError(errorDescription || 'Access denied')
-      // Clear error params from URL
       const newParams = new URLSearchParams(searchParams)
       newParams.delete('error')
       newParams.delete('error_description')
@@ -27,7 +26,15 @@ function App() {
     }
   }, [searchParams, setSearchParams])
 
-  // Show error message if Auth0 callback had an error
+  // Show a brief confirmation when the user returns from email verification
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash.includes('type=signup') || hash.includes('type=email_change')) {
+      setEmailVerified(true)
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+  }, [])
+
   if (authError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -40,9 +47,11 @@ function App() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
             <p className="text-gray-600 mb-4">{authError}</p>
-            <p className="text-sm text-gray-500 mb-6">
-              This application is restricted to @legl.com email addresses only.
-            </p>
+            {restrictLoginToLeglDomain && (
+              <p className="text-sm text-gray-500 mb-6">
+                This application is restricted to @legl.com email addresses only.
+              </p>
+            )}
             <button
               onClick={() => {
                 setAuthError(null)
@@ -66,8 +75,23 @@ function App() {
     )
   }
 
+  if (user && needsPasswordReset) {
+    return <Navigate to="/reset-password" replace />
+  }
+
   if (!user) {
-    return <LoginForm />
+    return (
+      <>
+        {emailVerified && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-full mx-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg text-center">
+              <p className="text-green-800 text-sm font-medium">Email verified successfully! You can now sign in.</p>
+            </div>
+          </div>
+        )}
+        <LoginForm />
+      </>
+    )
   }
 
   return <Dashboard routeParams={params} pathname={location.pathname} />

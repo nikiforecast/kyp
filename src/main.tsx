@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App.tsx';
 import { PublicUserJourneyView } from './components/PublicUserJourneyView.tsx';
+import { ResetPasswordForm } from './components/ResetPasswordForm.tsx';
+import { AuthProvider } from './hooks/useAuth.ts';
 import './index.css';
 
 
@@ -11,8 +13,10 @@ const root = createRoot(document.getElementById('root')!);
 root.render(
   <StrictMode>
     <BrowserRouter>
+    <AuthProvider>
     <Routes>
       <Route path="/" element={<App />} />
+      <Route path="/reset-password" element={<ResetPasswordForm />} />
         <Route path="/projects" element={<App />} />
       <Route path="/public/user-journey/:publicId" element={<PublicUserJourneyView />} />
       <Route path="/project/:shortId" element={<App />} />
@@ -30,6 +34,7 @@ root.render(
       <Route path="/settings" element={<App />} />
       <Route path="/design-system" element={<App />} />
     </Routes>
+    </AuthProvider>
     </BrowserRouter>
   </StrictMode>
 );
