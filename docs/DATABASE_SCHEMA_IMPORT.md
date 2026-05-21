@@ -24,6 +24,50 @@ supabase db push
 
 That applies migrations from `supabase/migrations/` without manual concatenation.
 
+## Fresh Supabase project (no tables in Table Editor)
+
+A new hosted project stays empty until **`db push`** (or equivalent) runs against **that** project. Creating the backend in GitHub doesn’t migrate the DB.
+
+### 1. Get the correct **project reference**
+
+Supabase Dashboard → **Project Settings** → **General** → **Reference ID**, or from the dashboard URL:
+
+`/project/`**`YOUR_REF`**`/`
+
+Use **this ref** — not `.env`, not an old teammate’s `.temp/` file stored in the repo (those easily point at the wrong project).
+
+### 2. Link CLI to this project and push migrations
+
+From the repo root:
+
+```bash
+npx supabase login
+npx supabase link --project-ref YOUR_REF
+```
+
+`link` may ask for the **database password** (Dashboard → **Project Settings** → **Database** — use your saved password or “Reset database password” if unknown).
+
+Then:
+
+```bash
+npx supabase db push
+```
+
+You should see many migration lines applied without errors.
+
+### 3. Confirm
+
+**Table Editor** → schema **`public`**. Tables like `workspaces`, `projects`, `user_journeys` should appear after a refresh.
+
+### If CLI isn’t practical
+
+Dashboard → **SQL Editor** → paste/run **`docs/kyp_database_schema.sql`** on an empty project only. Very large scripts can hit editor limits; **`db push`** is more reliable.
+
+### If tables still look empty
+
+- Open **Table Editor**, ensure you’re viewing schema **`public`**, not only **`auth`**.
+- **`db push`** must complete without errors — copy any error output and fix ordering or collisions before retrying.
+
 ## Requirements (PostgreSQL)
 
 | Requirement | Notes |
