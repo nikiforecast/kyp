@@ -1,5 +1,5 @@
 import React from 'react'
-import { Users, FolderOpen, FileText, Calendar, Building2, Palette } from 'lucide-react'
+import { Users, FileText, Building2 } from 'lucide-react'
 import type { Project, Stakeholder, ResearchNote, WorkspaceUser, LawFirm } from '../lib/supabase'
 
 interface WorkspaceOverviewProps {
@@ -18,7 +18,6 @@ export function WorkspaceOverview({
   lawFirms 
 }: WorkspaceOverviewProps) {
   const stats = [
-    { label: 'Epics', value: projects.length.toString(), icon: FolderOpen, color: 'bg-blue-500' },
     { label: 'Stakeholders', value: stakeholders.length.toString(), icon: Users, color: '#6b42d1' },
     { label: 'Notes & Calls', value: notes.length.toString(), icon: FileText, color: 'bg-indigo-500' },
     { label: 'Team Members', value: workspaceUsers.filter(u => u.status === 'active').length.toString(), icon: Users, color: 'bg-emerald-500' },
@@ -56,26 +55,6 @@ export function WorkspaceOverview({
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Projects</h3>
-          <div className="space-y-3">
-            {projects.slice(0, 3).map((project) => (
-              <div key={project.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <FolderOpen size={16} className="text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{project.name}</p>
-                  <p className="text-sm text-gray-500">Created {new Date(project.created_at).toLocaleDateString()}</p>
-                </div>
-              </div>
-            ))}
-            {projects.length === 0 && (
-              <p className="text-gray-500 text-center py-4">No projects yet</p>
-            )}
-          </div>
-        </div>
-
         <div className="bg-white rounded-xl p-6 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Notes & Calls</h3>
           <div className="space-y-3">

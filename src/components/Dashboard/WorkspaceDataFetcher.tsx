@@ -163,18 +163,6 @@ export function WorkspaceDataFetcher({
         return
       }
 
-      if (pathname === '/projects') {
-        setCurrentView('projects')
-        onViewChange('projects')
-        setSelectedProject(null)
-        setSelectedStakeholder(null)
-        setSelectedNote(null)
-        setSelectedUserStory(null)
-        setSelectedDesignForProject(null)
-        setSelectedLawFirm(null)
-        return
-      }
-
       // Handle top-level navigation paths
       if (pathname === '/law-firms') {
         setCurrentView('law-firms')
@@ -528,7 +516,7 @@ export function WorkspaceDataFetcher({
 
   const handleBackFromDesign = () => {
     setSelectedDesignForProject(null)
-    setCurrentView('projects')
+    setCurrentView('user-journeys')
     setIsNavigatingBack(true)
     navigate('/')
   }
@@ -542,8 +530,15 @@ export function WorkspaceDataFetcher({
 
   // Project handlers
   const handleCreateProject = async (name: string, overview?: string) => {
+    const workspaceId =
+      workspaces[0]?.id ||
+      (user?.id
+        ? workspaceUsers.find((wu) => wu.user_id === user.id)?.workspace_id
+        : undefined) ||
+      workspaceUsers[0]?.workspace_id
+
     try {
-      const project = await createProject(name, overview)
+      const project = await createProject(name, overview, workspaceId)
       if (project) {
         setProjects([project, ...projects])
       } else {
@@ -634,9 +629,12 @@ export function WorkspaceDataFetcher({
       setSelectedStakeholder(null)
       // Don't set isNavigatingBack to true because we want the route to be processed normally
       navigate(`/law-firm/${originLawFirm.short_id}`)
+    } else if (stakeholderDetailOrigin === 'project' && selectedProject) {
+      setSelectedStakeholder(null)
+      navigate(`/project/${selectedProject.short_id}`)
     } else {
       setSelectedStakeholder(null)
-      onViewChange('projects')
+      onViewChange('user-journeys')
       navigate('/')
     }
   }
@@ -946,9 +944,7 @@ export function WorkspaceDataFetcher({
       loading={loading}
       loadingBackgroundData={loadingBackgroundData}
       workspaceId={workspaceId}
-      projects={projects}
       stakeholders={stakeholders}
-      notes={notes}
       workspaceUsers={workspaceUsers}
       userRoles={userRoles}
       platforms={platforms}
@@ -968,15 +964,8 @@ export function WorkspaceDataFetcher({
       selectedDesignForProject={selectedDesignForProject}
       selectedDesign={selectedDesign}
       selectedLawFirm={selectedLawFirm}
-      allProjectProgressStatus={allProjectProgressStatus}
-      allUserStories={allUserStories}
-      allDesigns={allDesigns}
       user={user}
       userStoryComments={userStoryComments}
-      onCreateProject={handleCreateProject}
-      onUpdateProject={handleUpdateProject}
-      onDeleteProject={handleDeleteProject}
-      onSelectProject={handleSelectProject}
       onBackToWorkspace={handleBackToWorkspace}
       onCreateStakeholder={handleCreateStakeholder}
       onUpdateStakeholder={handleUpdateStakeholder}

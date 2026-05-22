@@ -1,5 +1,4 @@
 import React from 'react'
-import { ProjectManager } from '../ProjectManager'
 import { UserJourneysManager } from '../UserJourneysManager'
 import { UserJourneyCreator } from '../UserJourneyCreator'
 import { LawFirmManager } from '../LawFirmManager'
@@ -30,7 +29,6 @@ import type {
   UserStory,
   NoteTemplate,
   Design,
-  ProjectProgressStatus,
   UserStoryComment
 } from '../../lib/supabase'
 
@@ -41,9 +39,7 @@ interface MainContentRendererProps {
   workspaceId: string
   
   // Data states
-  projects: Project[]
   stakeholders: Stakeholder[]
-  notes: ResearchNote[]
   workspaceUsers: WorkspaceUser[]
   userRoles: UserRole[]
   platforms: Platform[]
@@ -65,16 +61,8 @@ interface MainContentRendererProps {
   selectedDesign: Design | null
   selectedDesignForProject: Design | null
   selectedLawFirm: LawFirm | null
-  allProjectProgressStatus: ProjectProgressStatus[]
-  allUserStories: UserStory[]
-  allDesigns: Design[]
   user: User | null
   
-  // Project handlers
-  onCreateProject: (name: string, overview?: string) => Promise<void>
-  onUpdateProject: (project: Project) => Promise<void>
-  onDeleteProject: (projectId: string) => Promise<void>
-  onSelectProject: (project: Project) => void
   onBackToWorkspace: () => void
   
   // Stakeholder handlers
@@ -141,9 +129,7 @@ export function MainContentRenderer({
   loading,
   loadingBackgroundData,
   workspaceId,
-  projects,
   stakeholders,
-  notes,
   workspaceUsers,
   userRoles,
   platforms,
@@ -163,15 +149,8 @@ export function MainContentRenderer({
   selectedDesign,
   selectedDesignForProject,
   selectedLawFirm,
-  allProjectProgressStatus,
-  allUserStories,
-  allDesigns,
   user,
   userStoryComments,
-  onCreateProject,
-  onUpdateProject,
-  onDeleteProject,
-  onSelectProject,
   onBackToWorkspace,
   onCreateStakeholder,
   onUpdateStakeholder,
@@ -257,7 +236,7 @@ export function MainContentRenderer({
             ? 'Back to Stakeholders' 
             : stakeholderDetailOrigin === 'law-firm' && originLawFirm
               ? `Back to ${originLawFirm.name}`
-              : 'Back to Epic'
+              : 'Back to Project'
         }
         onBack={onStakeholderBack}
         onUpdate={(updates) => {
@@ -361,20 +340,6 @@ export function MainContentRenderer({
 
 
   switch (currentView) {
-    case 'projects':
-      return (
-        <ProjectManager 
-          projects={projects}
-          notes={notes}
-          allProjectProgressStatus={allProjectProgressStatus}
-          allUserStories={allUserStories}
-          allDesigns={allDesigns}
-          onCreateProject={onCreateProject}
-          onSelectProject={onSelectProject}
-          onUpdateProject={onUpdateProject}
-          onDeleteProject={onDeleteProject}
-        />
-      )
     case 'user-journeys':
       return (
         <UserJourneysManager workspaceId={workspaceId} />
@@ -461,17 +426,7 @@ export function MainContentRenderer({
       )
     default:
       return (
-        <ProjectManager 
-          projects={projects}
-          notes={notes}
-          allProjectProgressStatus={allProjectProgressStatus}
-          allUserStories={allUserStories}
-          allDesigns={allDesigns}
-          onCreateProject={onCreateProject}
-          onSelectProject={onSelectProject}
-          onUpdateProject={onUpdateProject}
-          onDeleteProject={onDeleteProject}
-        />
+        <UserJourneysManager workspaceId={workspaceId} />
       )
   }
 }

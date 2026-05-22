@@ -686,19 +686,6 @@ export function ProjectViewRenderer({
     )
   }
 
-  const workspaceMenuItems = [
-    { id: 'projects', label: 'Epics', icon: FolderOpen },
-    { id: 'law-firms', label: 'Accounts', icon: Building2 },
-    { id: 'user-roles', label: 'User Roles', icon: UserCheck },
-    { id: 'stakeholders', label: 'Stakeholders', icon: Users },
-    { id: 'team', label: 'KYP Team', icon: UserPlus },
-  ]
-
-  const handleWorkspaceNavigation = (viewId: string) => {
-    if (onNavigateToWorkspace) {
-      onNavigateToWorkspace(viewId)
-    }
-  }
 
   const handleSignOut = () => {
     if (onSignOut) {
@@ -717,7 +704,7 @@ export function ProjectViewRenderer({
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-3"
           >
             <ArrowLeft size={20} />
-            All Epics
+            Back to Home
           </button>
           <h1 className="text-lg font-semibold text-gray-900 truncate">{project.name}</h1>
           <p className="text-sm text-gray-500">Project Dashboard</p>

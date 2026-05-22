@@ -18,8 +18,6 @@ export function Dashboard({ routeParams, pathname }: DashboardProps) {
   useEffect(() => {
     if (pathname === '/') {
       setCurrentDashboardView('user-journeys')
-    } else if (pathname === '/projects') {
-      setCurrentDashboardView('projects')
     } else if (pathname === '/user-journeys') {
       setCurrentDashboardView('user-journeys')
     } else if (pathname === '/user-journey-creator') {
@@ -45,9 +43,6 @@ export function Dashboard({ routeParams, pathname }: DashboardProps) {
     switch (viewId) {
       case 'user-journeys':
         navigate('/')
-        break
-      case 'projects':
-        navigate('/projects')
         break
       case 'law-firms':
         navigate('/law-firms')

@@ -1,5 +1,5 @@
 import React from 'react'
-import { LogOut, Home, FolderOpen, Users, UserPlus, Building2, Settings, LayoutDashboard, Palette, Route } from 'lucide-react'
+import { LogOut, Home, Users, UserPlus, Building2, Settings, LayoutDashboard, Palette, Route } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 
 interface MenuItem {
@@ -25,7 +25,6 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const menuItems: MenuItem[] = [
     { id: 'user-journeys', label: 'User Journeys', icon: Route },
-    { id: 'projects', label: 'Epics', icon: FolderOpen },
     { id: 'law-firms', label: 'Accounts', icon: Building2 },
     { id: 'stakeholders', label: 'Stakeholders', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings },

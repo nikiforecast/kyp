@@ -35,9 +35,9 @@ import { ImportJourneyTranscriptModal } from './ImportJourneyTranscriptModal'
 import { EditNodeModal, type NodeFormData } from './EditNodeModal'
 import { EditJourneyModal } from './EditJourneyModal'
 import { LawFirmForm } from './LawFirmManager/LawFirmForm'
-import type { UserRole, Project, LawFirm, ThirdParty, Platform } from '../lib/supabase'
+import type { UserRole, LawFirm, ThirdParty, Platform } from '../lib/supabase'
 import { supabase } from '../lib/supabase'
-import { getProjects, createUserJourney, updateUserJourney, getUserJourneyById, getUserJourneyByShortId } from '../lib/database'
+import { createUserJourney, updateUserJourney, getUserJourneyById, getUserJourneyByShortId } from '../lib/database'
 import { getLawFirms, createLawFirm } from '../lib/database/services/lawFirmService'
 import { getUserJourneyLawFirms, setUserJourneyLawFirms, deleteUserJourney, setUserJourneyPublicSharing } from '../lib/database/services/userJourneyService'
 import { assignUserJourneysToFolder, getUserJourneyFolders, getUserJourneyFolderById, type UserJourneyFolder } from '../lib/database/services/userJourneyFolderService'
@@ -67,8 +67,7 @@ const initialEdges: Edge[] = []
 
 interface UserJourneyCreatorProps {
   userRoles?: UserRole[]
-  projectId?: string // Optional - if provided, will auto-select that project
-  journeyId?: string // Optional - if provided, will load that journey for editing
+  journeyId?: string
   thirdParties?: ThirdParty[]
   platforms?: Platform[]
 }
@@ -217,7 +216,7 @@ function KeyboardZoomHandler() {
   return null
 }
 
-export function UserJourneyCreator({ userRoles = [], projectId, journeyId, thirdParties: initialThirdParties, platforms: initialPlatforms }: UserJourneyCreatorProps) {
+export function UserJourneyCreator({ userRoles = [], journeyId, thirdParties: initialThirdParties, platforms: initialPlatforms }: UserJourneyCreatorProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const params = useParams()
@@ -427,8 +426,6 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
   const [showEdgeLabelModal, setShowEdgeLabelModal] = useState(false)
   const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null)
   const [edgeLabel, setEdgeLabel] = useState('')
-  const [projects, setProjects] = useState<Project[]>([])
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(projectId || '')
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
   const [journeyFolder, setJourneyFolder] = useState<UserJourneyFolder | null>(null)
   // Status is computed from folder - journeys inherit status from their parent folder
@@ -519,7 +516,7 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
     setUndoSnapshot(null)
   }, [undoSnapshot, setNodes, setEdges])
 
-  // Load projects and journey on mount
+  // Load journey data on mount
   useEffect(() => {
     loadData()
   }, [])
@@ -564,7 +561,6 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
       
       // Check if there's an ID in the URL query params or path
       const urlJourneyId = searchParams.get('id')
-      const urlProjectId = searchParams.get('projectId')
       const urlFolderId = searchParams.get('folderId')
       const shortIdParam = params.shortId ? parseInt(params.shortId) : null
       
@@ -575,7 +571,6 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
       
       // Parallelize all independent data loading
       const loadPromises: Promise<any>[] = [
-        getProjects(),
         getLawFirms(),
         !initialPlatforms || initialPlatforms.length === 0 ? getPlatforms() : Promise.resolve(initialPlatforms),
       ]
@@ -614,10 +609,9 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
       loadPromises.push(journeyPromise)
       
       // Execute all parallel loads
-      const [projectsData, lawFirmsData, platformsData, journey] = await Promise.all(loadPromises)
+      const [lawFirmsData, platformsData, journey] = await Promise.all(loadPromises)
       
       // Set basic data immediately
-      setProjects(projectsData)
       setLawFirms(lawFirmsData)
       if (!initialPlatforms || initialPlatforms.length === 0) {
         setPlatforms(platformsData)
@@ -645,7 +639,6 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
         setJourneyName(journey.name)
         setJourneyDescription(journey.description || '')
         setJourneyLayout(journey.layout || 'vertical')
-        setSelectedProjectId(journey.project_id || '')
         
         // Load folder and law firms in parallel
         const folderAndLawFirmsPromises: Promise<any>[] = [
@@ -785,14 +778,6 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
             setEdges([])
           }
         }
-      } else {
-        // New journey - set up defaults
-        // Check URL params first, then props, otherwise default to No Epic
-        const initialProjectId = urlProjectId || projectId
-        if (initialProjectId && projectsData.find(p => p.id === initialProjectId)) {
-          setSelectedProjectId(initialProjectId)
-        }
-        // If no URL param or prop, default to empty string (No Epic)
       }
     } catch (error) {
       console.error('Error loading data:', error)
@@ -1845,7 +1830,6 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
           description: journeyDescription,
           layout: journeyLayout,
           flow_data: flowData,
-          project_id: selectedProjectId || null
         })
         
         if (updated) {
@@ -1862,7 +1846,7 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
           journeyName,
           journeyDescription,
           flowData,
-          selectedProjectId || null,
+          null,
           journeyLayout,
           selectedFolderId || null
         )
@@ -1890,7 +1874,7 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
     } finally {
       setSaving(false)
     }
-  }, [journeyName, journeyDescription, nodes, edges, selectedProjectId, currentJourneyId, sortNodesForSaving, journeyLayout, selectedLawFirmIds])
+  }, [journeyName, journeyDescription, nodes, edges, currentJourneyId, sortNodesForSaving, journeyLayout, selectedLawFirmIds])
 
   // Keyboard shortcut for save (Cmd/Ctrl+S) - defined after saveJourney
   useEffect(() => {
@@ -4829,7 +4813,7 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
                     journeyName,
                     journeyDescription,
                     flowData,
-                    selectedProjectId || null,
+                    null,
                     journeyLayout,
                     selectedFolderId || null
                   )
@@ -4870,19 +4854,9 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
           )}
         </div>
         
-        {/* Row 2: Title/Epic section and Action buttons */}
+        {/* Row 2: Title section and Action buttons */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
-            {/* Epic on first line if present */}
-            {selectedProjectId && (
-              <div className="flex items-center gap-2 mb-1">
-                <FolderOpen size={14} className="text-gray-400" />
-                <p className="text-sm text-gray-500">
-                  {convertEmojis(projects.find(p => p.id === selectedProjectId)?.name || 'Unknown')}
-                </p>
-              </div>
-            )}
-            
             {/* Title and Status Badge on same row */}
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-bold text-gray-900">{convertEmojis(journeyName)}</h2>
@@ -5342,7 +5316,6 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
                 description: journeyDescription,
                 layout: journeyLayout,
                 flow_data: flowData,
-                project_id: selectedProjectId || null
               })
               
               // Save law firm associations
@@ -5355,7 +5328,7 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
                 journeyName,
                 journeyDescription,
                 flowData,
-                selectedProjectId || null,
+                null,
                 journeyLayout,
                 selectedFolderId || null
               )
@@ -5383,23 +5356,8 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
         }}
         journeyName={journeyName}
         journeyDescription={journeyDescription}
-        selectedProjectId={selectedProjectId}
-        selectedLawFirmIds={selectedLawFirmIds}
-        lawFirmSearchQuery={lawFirmSearchQuery}
-        projects={projects}
-        lawFirms={lawFirms}
         onNameChange={setJourneyName}
         onDescriptionChange={setJourneyDescription}
-        onProjectChange={setSelectedProjectId}
-        onLawFirmSearchChange={setLawFirmSearchQuery}
-        onLawFirmToggle={(firmId, checked) => {
-          if (checked) {
-            setSelectedLawFirmIds(prev => [...prev, firmId])
-          } else {
-            setSelectedLawFirmIds(prev => prev.filter(id => id !== firmId))
-          }
-        }}
-        onAddLawFirmClick={() => setShowAddLawFirmModal(true)}
       />
 
       {/* Save Modal */}
@@ -5410,21 +5368,6 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
               {currentJourneyId ? 'Update' : 'Save'} User Journey
             </h3>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Epic
-                </label>
-                <select
-                  value={selectedProjectId}
-                  onChange={(e) => setSelectedProjectId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">No Epic</option>
-                  {projects.map(project => (
-                    <option key={project.id} value={project.id}>{project.name}</option>
-                  ))}
-                </select>
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Journey Name *
