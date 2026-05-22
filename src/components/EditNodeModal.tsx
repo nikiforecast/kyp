@@ -613,8 +613,7 @@ export function EditNodeModal({
         nodeVariant = 'Custom'
       }
       
-      // Default to 'Legl' if variant is empty or undefined
-      const resolvedVariant = (nodeVariant !== undefined && nodeVariant !== null && nodeVariant !== '') ? nodeVariant : 'Legl'
+      const resolvedVariant = (nodeVariant !== undefined && nodeVariant !== null && nodeVariant !== '') ? nodeVariant : ''
       
       // Convert bullet points to objects with IDs
       const bulletPointsWithNewIds: BulletPoint[] = existingBulletPoints.length > 0
@@ -669,7 +668,6 @@ export function EditNodeModal({
         // The useEffect will update selectedPlatform when platforms load
         setPlatformSearchQuery(resolvedVariant)
       } else {
-        // Shouldn't happen since we default to 'Legl', but handle gracefully
         setPlatformSearchQuery('')
         setSelectedPlatform(null)
       }
@@ -699,9 +697,7 @@ export function EditNodeModal({
         swimLane: null
       })
       
-      // Set platform search query for new node (defaults to 'Legl')
-      setPlatformSearchQuery('Legl')
-      // The useEffect will set selectedPlatform when platforms load
+      setPlatformSearchQuery('')
       setSelectedPlatform(null)
       // Reset user role search for new node
       setUserRoleSearchQuery('')
