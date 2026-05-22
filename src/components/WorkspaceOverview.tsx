@@ -21,7 +21,7 @@ export function WorkspaceOverview({
     { label: 'Stakeholders', value: stakeholders.length.toString(), icon: Users, color: '#6b42d1' },
     { label: 'Notes & Calls', value: notes.length.toString(), icon: FileText, color: 'bg-indigo-500' },
     { label: 'Team Members', value: workspaceUsers.filter(u => u.status === 'active').length.toString(), icon: Users, color: 'bg-emerald-500' },
-    { label: 'Law Firms', value: lawFirms.length.toString(), icon: Building2, color: 'bg-orange-500' }
+    { label: 'Accounts', value: lawFirms.length.toString(), icon: Building2, color: 'bg-orange-500' }
   ]
 
   return (

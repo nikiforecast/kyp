@@ -22,7 +22,7 @@ interface EditColumnsModalProps {
 
 // Required columns that cannot be edited or deleted
 const REQUIRED_COLUMNS = [
-  { key: 'name', name: 'Law Firm Name', type: 'string' as const, isRequired: true },
+  { key: 'name', name: 'Account Name', type: 'string' as const, isRequired: true },
   { key: 'structure', name: 'Structure', type: 'string' as const, isRequired: true }
 ]
 
@@ -281,7 +281,7 @@ export function EditColumnsModal({
   }
 
   const handleDeleteColumn = async (columnId: string) => {
-    if (!confirm('Are you sure you want to delete this column? This will remove the column from all law firms.')) {
+    if (!confirm('Are you sure you want to delete this column? This will remove the column from all accounts.')) {
       return
     }
 

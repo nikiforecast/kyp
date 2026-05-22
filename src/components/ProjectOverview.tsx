@@ -312,7 +312,7 @@ export function ProjectOverview({
           
           {/* Law Firm Types Section */}
           <div className="w-full">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">Law Firm Types</h4>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">Account Types</h4>
             <div className="space-y-3 w-full">
               {(() => {
                 // Calculate law firm structure breakdown

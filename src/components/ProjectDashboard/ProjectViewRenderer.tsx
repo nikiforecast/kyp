@@ -686,6 +686,7 @@ export function ProjectViewRenderer({
     )
   }
 
+
   const handleSignOut = () => {
     if (onSignOut) {
       onSignOut()

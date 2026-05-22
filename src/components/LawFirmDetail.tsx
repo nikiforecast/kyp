@@ -20,22 +20,22 @@ const sections = [
   {
     title: 'Quick Facts',
     field: 'quick_facts',
-    placeholder: 'Add quick facts about this law firm...'
+    placeholder: 'Add quick facts about this account...'
   },
   {
     title: 'Key Quotes',
     field: 'key_quotes', 
-    placeholder: 'Add key quotes from this law firm...'
+    placeholder: 'Add key quotes from this account...'
   },
   {
     title: 'Insights',
     field: 'insights',
-    placeholder: 'Add insights about this law firm...'
+    placeholder: 'Add insights about this account...'
   },
   {
     title: 'Opportunities',
     field: 'opportunities',
-    placeholder: 'Add opportunities with this law firm...'
+    placeholder: 'Add opportunities with this account...'
   }
 ]
 
@@ -80,7 +80,7 @@ export function LawFirmDetail({
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-3"
             >
               <ArrowLeft size={20} />
-              Back to Law Firms
+              Back to Accounts
             </button>
             <div className="flex items-center gap-3 mb-2">
               <div className="flex items-center gap-2">
@@ -187,7 +187,7 @@ export function LawFirmDetail({
           ) : (
             <div className="text-center py-8">
               <Users size={48} className="mx-auto text-gray-300 mb-4" />
-              <p className="text-gray-500">No stakeholders associated with this law firm yet.</p>
+              <p className="text-gray-500">No stakeholders associated with this account yet.</p>
             </div>
           )}
         </div>
