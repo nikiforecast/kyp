@@ -6,13 +6,12 @@ import { StructureTag } from '../utils/structureTagStyles'
 import { CopyLinkButton } from './common/CopyLinkButton'
 import { EditableContentSection } from './common/EditableContentSection'
 import { PROGRESS_QUESTIONS } from '../lib/database'
-import type { Project, ResearchNote, UserStory, UserJourney, Design, Stakeholder, UserRole, LawFirm, Task, ProblemOverview } from '../lib/supabase'
+import type { Project, Stakeholder, UserRole, LawFirm, Task, ProblemOverview } from '../lib/supabase'
 import type { ProjectProgressStatus } from '../lib/supabase'
 
 interface ProjectOverviewProps {
   project: Project
   assignedStakeholders: Stakeholder[]
-  notes: ResearchNote[]
   tasks: Task[]
   problemOverview: ProblemOverview
   userRoles: UserRole[]
@@ -23,13 +22,11 @@ interface ProjectOverviewProps {
   onSaveProblemOverview?: (updates?: Partial<ProblemOverview>) => Promise<void>
   projectTasks: Task[]
   onNavigateToStakeholders?: () => void
-  onViewNote?: (note: ResearchNote) => void
 }
 
 export function ProjectOverview({ 
   project, 
   assignedStakeholders, 
-  notes, 
   tasks,
   problemOverview, 
   userRoles, 
@@ -40,7 +37,6 @@ export function ProjectOverview({
   onProblemOverviewChange,
   onSaveProblemOverview,
   onNavigateToStakeholders,
-  onViewNote
 }: ProjectOverviewProps) {
   const [originalUnderstandingRating, setOriginalUnderstandingRating] = React.useState(problemOverview.understanding_rating)
   const [showUnderstandingButtons, setShowUnderstandingButtons] = React.useState(false)
@@ -426,46 +422,6 @@ export function ProjectOverview({
         </div>
       </div>
       */}     
-
-      <div className="bg-white rounded-xl p-6 border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Notes & Calls</h3>
-        <div className="space-y-3">
-          {notes.slice(0, 3).map((note) => (
-            <div 
-              key={note.id} 
-              className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-              onClick={() => onViewNote?.(note)}
-            >
-              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <FileText size={16} className="text-indigo-600" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="font-medium text-gray-900">{note.name}</p>
-                  {(() => {
-                    const displayDate = note.note_date ? new Date(note.note_date) : new Date(note.created_at)
-                    const isFutureDate = displayDate > new Date()
-                    return isFutureDate ? (
-                      <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">
-                        Upcoming
-                      </span>
-                    ) : null
-                  })()}
-                </div>
-                <p className="text-sm text-gray-500">
-                  {note.note_date 
-                    ? new Date(note.note_date).toLocaleDateString()
-                    : `Created ${new Date(note.created_at).toLocaleDateString()}`
-                  }
-                </p>
-              </div>
-            </div>
-          ))}
-          {notes.length === 0 && (
-            <p className="text-gray-500 text-center py-4">No notes & calls yet</p>
-          )}
-        </div>
-      </div>
     </div>
   )
 }

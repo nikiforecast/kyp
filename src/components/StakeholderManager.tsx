@@ -12,11 +12,9 @@ interface StakeholderManagerProps {
   stakeholders: Stakeholder[]
   userRoles: UserRole[]
   lawFirms: LawFirm[]
-  userPermissions: UserPermission[]
-  stakeholderNotesCountMap: Record<string, number>
   loading?: boolean
-  onCreateStakeholder: (name: string, userRoleId?: string, lawFirmId?: string, userPermissionId?: string, visitorId?: string, department?: string, pendoRole?: string) => Promise<void>
-  onUpdateStakeholder: (stakeholderId: string, updates: { name?: string; user_role_id?: string; law_firm_id?: string; user_permission_id?: string; notes?: string; visitor_id?: string; department?: string; pendo_role?: string }) => Promise<void>
+  onCreateStakeholder: (name: string, userRoleId?: string, lawFirmId?: string, visitorId?: string, department?: string, pendoRole?: string) => Promise<void>
+  onUpdateStakeholder: (stakeholderId: string, updates: { name?: string; user_role_id?: string; law_firm_id?: string; notes?: string; visitor_id?: string; department?: string; pendo_role?: string }) => Promise<void>
   onDeleteStakeholder: (stakeholderId: string) => Promise<void>
   onImportStakeholdersCSV?: (csvData: string) => Promise<{ success: number, errors: string[] }>
   onSelectStakeholder?: (stakeholder: Stakeholder) => void
@@ -26,8 +24,6 @@ export function StakeholderManager({
   stakeholders = [], 
   userRoles = [],
   lawFirms = [],
-  userPermissions = [],
-  stakeholderNotesCountMap,
   loading = false,
   onCreateStakeholder, 
   onUpdateStakeholder, 
@@ -41,7 +37,6 @@ export function StakeholderManager({
     name: '', 
     user_role_id: '', 
     law_firm_id: '', 
-    user_permission_id: '',
     visitor_id: '',
     department: '',
     pendo_role: ''
@@ -51,7 +46,6 @@ export function StakeholderManager({
   const [searchTerm, setSearchTerm] = useState('')
   const [userRoleFilter, setUserRoleFilter] = useState('')
   const [structureFilter, setStructureFilter] = useState('')
-  const [userPermissionFilter, setUserPermissionFilter] = useState('')
   const [showImportModal, setShowImportModal] = useState(false)
   const [importResults, setImportResults] = useState<{ success: number, errors: string[] } | null>(null)
   const [selectedStakeholders, setSelectedStakeholders] = useState<string[]>([])
@@ -61,16 +55,9 @@ export function StakeholderManager({
   // Check for filter from navigation on component mount
   useEffect(() => {
     const filterUserRole = localStorage.getItem('stakeholder_filter_user_role')
-    const filterUserPermission = localStorage.getItem('stakeholder_filter_user_permission')
     if (filterUserRole) {
       setUserRoleFilter(filterUserRole)
-      // Clear the filter from localStorage after applying it
       localStorage.removeItem('stakeholder_filter_user_role')
-    }
-    if (filterUserPermission) {
-      setUserPermissionFilter(filterUserPermission)
-      // Clear the filter from localStorage after applying it
-      localStorage.removeItem('stakeholder_filter_user_permission')
     }
   }, [])
 
@@ -85,7 +72,6 @@ export function StakeholderManager({
         newStakeholder.name, 
         newStakeholder.user_role_id || undefined,
         newStakeholder.law_firm_id || undefined,
-        newStakeholder.user_permission_id || undefined,
         newStakeholder.visitor_id || undefined,
         newStakeholder.department || undefined,
         newStakeholder.pendo_role || undefined
@@ -94,7 +80,6 @@ export function StakeholderManager({
         name: '', 
         user_role_id: '', 
         law_firm_id: '', 
-        user_permission_id: '',
         visitor_id: '',
         department: '',
         pendo_role: ''
@@ -118,7 +103,6 @@ export function StakeholderManager({
         name: editingStakeholder.name,
         user_role_id: editingStakeholder.user_role_id || undefined,
         law_firm_id: editingStakeholder.law_firm_id || undefined,
-        user_permission_id: editingStakeholder.user_permission_id || undefined,
         visitor_id: editingStakeholder.visitor_id || undefined,
         department: editingStakeholder.department || undefined,
         pendo_role: editingStakeholder.pendo_role || undefined
@@ -191,11 +175,6 @@ export function StakeholderManager({
     return userRoles.find(role => role.id === roleId)
   }
 
-  const getUserPermissionById = (permissionId?: string) => {
-    if (!permissionId) return null
-    return userPermissions.find(permission => permission.id === permissionId)
-  }
-
   const getLawFirmById = (firmId?: string) => {
     if (!firmId) return null
     return lawFirms.find(firm => firm.id === firmId)
@@ -203,25 +182,16 @@ export function StakeholderManager({
 
   const filteredStakeholders = stakeholders.filter(stakeholder => {
     const userRole = getUserRoleById(stakeholder.user_role_id)
-    const userPermission = getUserPermissionById(stakeholder.user_permission_id)
     const lawFirm = getLawFirmById(stakeholder.law_firm_id)
     
-    // Search filter
     const matchesSearch = stakeholder.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          userRole?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         userPermission?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          lawFirm?.name.toLowerCase().includes(searchTerm.toLowerCase())
     
-    // User role filter
     const matchesUserRole = !userRoleFilter || stakeholder.user_role_id === userRoleFilter
-    
-    // User permission filter
-    const matchesUserPermission = !userPermissionFilter || stakeholder.user_permission_id === userPermissionFilter
-    
-    // Structure filter
     const matchesStructure = !structureFilter || lawFirm?.structure === structureFilter
     
-    return matchesSearch && matchesUserRole && matchesUserPermission && matchesStructure
+    return matchesSearch && matchesUserRole && matchesStructure
   })
 
   const handleRowClick = (stakeholder: Stakeholder) => {
@@ -267,13 +237,10 @@ export function StakeholderManager({
       <StakeholderFilters
         searchTerm={searchTerm}
         userRoleFilter={userRoleFilter}
-        userPermissionFilter={userPermissionFilter}
         structureFilter={structureFilter}
         userRoles={userRoles}
-        userPermissions={userPermissions}
         onSearchChange={setSearchTerm}
         onUserRoleFilterChange={setUserRoleFilter}
-        onUserPermissionFilterChange={setUserPermissionFilter}
         onStructureFilterChange={setStructureFilter}
       />
 
@@ -447,15 +414,12 @@ export function StakeholderManager({
         stakeholder={newStakeholder}
         userRoles={userRoles}
         lawFirms={lawFirms}
-        userPermissions={userPermissions}
-        stakeholderNotesCountMap={stakeholderNotesCountMap}
         loading={creatingStakeholder}
         onSubmit={handleCreateStakeholder}
         onChange={(updates) => setNewStakeholder({ ...newStakeholder, ...updates })}
         onCancel={() => setShowStakeholderForm(false)}
       />
 
-      {/* Edit Stakeholder Form */}
       {editingStakeholder && (
         <StakeholderForm
           isVisible={true}
@@ -464,20 +428,15 @@ export function StakeholderManager({
             name: editingStakeholder.name,
             user_role_id: editingStakeholder.user_role_id || '',
             law_firm_id: editingStakeholder.law_firm_id || '',
-            user_permission_id: editingStakeholder.user_permission_id || '',
             visitor_id: editingStakeholder.visitor_id || '',
             department: editingStakeholder.department || '',
-            pendo_role: editingStakeholder.pendo_role || ''
+            pendo_role: editingStakeholder.pendo_role || '',
           }}
           userRoles={userRoles}
           lawFirms={lawFirms}
-          userPermissions={userPermissions}
           loading={updatingStakeholder}
           onSubmit={handleUpdateStakeholder}
-          onChange={(updates) => setEditingStakeholder({ 
-            ...editingStakeholder, 
-            ...updates
-          })}
+          onChange={(updates) => setEditingStakeholder({ ...editingStakeholder, ...updates })}
           onCancel={() => setEditingStakeholder(null)}
         />
       )}
@@ -495,8 +454,6 @@ export function StakeholderManager({
           stakeholders={filteredStakeholders}
           userRoles={userRoles}
           lawFirms={lawFirms}
-          userPermissions={userPermissions}
-          stakeholderNotesCountMap={stakeholderNotesCountMap}
           selectedStakeholders={selectedStakeholders}
           onRowClick={handleRowClick}
           onEdit={setEditingStakeholder}

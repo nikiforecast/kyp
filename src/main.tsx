@@ -20,9 +20,6 @@ root.render(
       <Route path="/public/user-journey/:publicId" element={<PublicUserJourneyView />} />
       <Route path="/project/:shortId" element={<App />} />
       <Route path="/stakeholder/:shortId" element={<App />} />
-      <Route path="/note/:shortId" element={<App />} />
-      <Route path="/user-story/:shortId" element={<App />} />
-      <Route path="/design/:shortId" element={<App />} />
       <Route path="/law-firm/:shortId" element={<App />} />
       <Route path="/law-firms" element={<App />} />
       <Route path="/user-journey/:shortId" element={<App />} />

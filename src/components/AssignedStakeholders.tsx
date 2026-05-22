@@ -11,7 +11,6 @@ interface AssignedStakeholdersProps {
   unassignedStakeholders: Stakeholder[]
   userRoles: UserRole[]
   lawFirms: LawFirm[]
-  userPermissions?: UserPermission[]
   showAssignModal: boolean
   onShowAssignModal: (show: boolean) => void
   onAssignStakeholder: (stakeholderId: string) => void
@@ -27,7 +26,6 @@ export const AssignedStakeholders: React.FC<AssignedStakeholdersProps> = ({
   unassignedStakeholders,
   userRoles,
   lawFirms,
-  userPermissions = [],
   showAssignModal,
   onShowAssignModal,
   onAssignStakeholder,

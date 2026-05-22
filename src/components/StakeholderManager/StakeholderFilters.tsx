@@ -5,27 +5,21 @@ import type { UserRole } from '../../lib/supabase'
 interface StakeholderFiltersProps {
   searchTerm: string
   userRoleFilter: string
-  userPermissionFilter: string
   structureFilter: string
   userRoles: UserRole[]
-  userPermissions: UserPermission[]
   onSearchChange: (value: string) => void
   onUserRoleFilterChange: (value: string) => void
-  onUserPermissionFilterChange: (value: string) => void
   onStructureFilterChange: (value: string) => void
 }
 
 export function StakeholderFilters({
   searchTerm,
   userRoleFilter,
-  userPermissionFilter,
   structureFilter,
   userRoles,
-  userPermissions,
   onSearchChange,
   onUserRoleFilterChange,
-  onUserPermissionFilterChange,
-  onStructureFilterChange
+  onStructureFilterChange,
 }: StakeholderFiltersProps) {
   return (
     <div className="bg-white rounded-xl p-4 border border-gray-200">
@@ -40,7 +34,7 @@ export function StakeholderFilters({
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
-        
+
         <div className="w-48">
           <select
             value={userRoleFilter}
@@ -49,28 +43,11 @@ export function StakeholderFilters({
           >
             <option value="">All User Roles</option>
             {userRoles.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
+              <option key={role.id} value={role.id}>{role.name}</option>
             ))}
           </select>
         </div>
-        
-        <div className="w-48">
-          <select
-            value={userPermissionFilter}
-            onChange={(e) => onUserPermissionFilterChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All Permissions</option>
-            {userPermissions.map((permission) => (
-              <option key={permission.id} value={permission.id}>
-                {permission.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        
+
         <div className="w-48">
           <select
             value={structureFilter}
