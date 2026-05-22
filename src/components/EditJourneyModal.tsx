@@ -2,9 +2,7 @@ import React, { useEffect } from 'react'
 import { Modal } from './DesignSystem/components/Modal'
 import { Button } from './DesignSystem/components/Button'
 import { RichTextDescription } from './DesignSystem/components/RichTextDescription'
-import { Plus } from 'lucide-react'
 import { EmojiAutocomplete } from './EmojiAutocomplete'
-import type { Project, LawFirm } from '../lib/supabase'
 
 interface EditJourneyModalProps {
   isOpen: boolean
@@ -12,19 +10,10 @@ interface EditJourneyModalProps {
   onSave: () => void
   journeyName: string
   journeyDescription: string
-  selectedProjectId: string
-  selectedLawFirmIds: string[]
-  lawFirmSearchQuery: string
-  projects: Project[]
-  lawFirms: LawFirm[]
   onNameChange: (name: string) => void
   onDescriptionChange: (description: string) => void
-  onProjectChange: (projectId: string) => void
-  onLawFirmSearchChange: (query: string) => void
-  onLawFirmToggle: (firmId: string, checked: boolean) => void
-  onAddLawFirmClick: () => void
   saveDisabled?: boolean
-  isCreating?: boolean // If true, shows "Create User Journey" title and "Create Journey" button
+  isCreating?: boolean
 }
 
 export function EditJourneyModal({
@@ -33,29 +22,16 @@ export function EditJourneyModal({
   onSave,
   journeyName,
   journeyDescription,
-  selectedProjectId,
-  selectedLawFirmIds,
-  lawFirmSearchQuery,
-  projects,
-  lawFirms,
   onNameChange,
   onDescriptionChange,
-  onProjectChange,
-  onLawFirmSearchChange,
-  onLawFirmToggle,
-  onAddLawFirmClick,
   saveDisabled = false,
   isCreating = false
 }: EditJourneyModalProps) {
-  // Handle Enter key to trigger Save Details
   useEffect(() => {
     if (!isOpen) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Only trigger if Enter is pressed and journey name is not empty
       if (event.key === 'Enter' && journeyName.trim() && !saveDisabled) {
-        // Don't trigger if user is typing in a textarea or input field
-        // (textarea for newlines, input for emoji autocomplete)
         const target = event.target as HTMLElement
         if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
           return
@@ -123,4 +99,3 @@ export function EditJourneyModal({
     </Modal>
   )
 }
-

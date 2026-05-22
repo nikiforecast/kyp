@@ -7,7 +7,7 @@ import { DataTable, Column } from './DesignSystem/components/DataTable'
 import { LoadingState } from './DesignSystem/components/LoadingSpinner'
 import { LawFirmForm } from './LawFirmManager/LawFirmForm'
 import { EditJourneyModal } from './EditJourneyModal'
-import { getProjects, getUserJourneys, deleteUserJourney, updateUserJourney, createUserJourney, type UserJourney } from '../lib/database'
+import { getUserJourneys, deleteUserJourney, updateUserJourney, createUserJourney, type UserJourney } from '../lib/database'
 import { getLawFirms, createLawFirm } from '../lib/database/services/lawFirmService'
 import { getUserJourneyLawFirms, setUserJourneyLawFirms, setUserJourneyPublicSharing } from '../lib/database/services/userJourneyService'
 import { getUserJourneyFolders, assignUserJourneysToFolder, moveFolderToParent, updateUserJourneyFolder, deleteUserJourneyFolder, createUserJourneyFolder, type UserJourneyFolder } from '../lib/database/services/userJourneyFolderService'
@@ -53,7 +53,6 @@ export function UserJourneysManager({ projectId, workspaceId }: UserJourneysMana
   const location = useLocation()
   const params = useParams<{ folderSlug?: string }>()
   const [userJourneys, setUserJourneys] = useState<UserJourneyWithProject[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
   const [folders, setFolders] = useState<UserJourneyFolder[]>([])
   const [lawFirms, setLawFirms] = useState<LawFirm[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -100,7 +99,6 @@ export function UserJourneysManager({ projectId, workspaceId }: UserJourneysMana
     name: '',
     description: '',
     layout: 'vertical' as 'vertical' | 'horizontal',
-    project_id: ''
   })
   const [selectedLawFirmIds, setSelectedLawFirmIds] = useState<string[]>([])
   const [lawFirmSearchQuery, setLawFirmSearchQuery] = useState('')
@@ -199,14 +197,12 @@ export function UserJourneysManager({ projectId, workspaceId }: UserJourneysMana
       setLoading(true)
       
       // Parallelize independent operations
-      const [projectsData, foldersData, lawFirmsData, allJourneys] = await Promise.all([
-        getProjects(),
+      const [foldersData, lawFirmsData, allJourneys] = await Promise.all([
         getUserJourneyFolders(workspaceId),
         getLawFirms(),
         getUserJourneys(projectId ?? null, workspaceId)
       ])
       
-      setProjects(projectsData)
       setFolders(foldersData)
       setLawFirms(lawFirmsData)
 
@@ -287,17 +283,12 @@ export function UserJourneysManager({ projectId, workspaceId }: UserJourneysMana
       
       // Enrich with project data, folder data, and user information
       const journeysWithData: UserJourneyWithProject[] = allJourneys.map(journey => {
-        const project = journey.project_id 
-          ? projectsData.find(p => p.id === journey.project_id)
-          : undefined
-        
         const folder = journey.folder_id 
           ? foldersData.find(f => f.id === journey.folder_id)
           : undefined
         
         return {
           ...journey,
-          project,
           folder,
           createdByUser: journey.created_by ? usersMap.get(journey.created_by) : undefined,
           updatedByUser: journey.updated_by ? usersMap.get(journey.updated_by) : undefined,
@@ -418,7 +409,6 @@ export function UserJourneysManager({ projectId, workspaceId }: UserJourneysMana
       name: journey.name,
       description: journey.description || '',
       layout: journey.layout || 'vertical',
-      project_id: journey.project_id || ''
     })
     
     // Fetch law firm associations lazily when opening edit modal
@@ -442,7 +432,6 @@ export function UserJourneysManager({ projectId, workspaceId }: UserJourneysMana
         name: editForm.name,
         description: editForm.description,
         layout: editForm.layout,
-        project_id: editForm.project_id || null
       })
       
       // Save law firm associations
@@ -456,8 +445,6 @@ export function UserJourneysManager({ projectId, workspaceId }: UserJourneysMana
               name: editForm.name, 
               description: editForm.description,
               layout: editForm.layout,
-              project_id: editForm.project_id || null,
-              project: editForm.project_id ? projects.find(p => p.id === editForm.project_id) : undefined
             }
           : j
       ))
@@ -544,9 +531,6 @@ export function UserJourneysManager({ projectId, workspaceId }: UserJourneysMana
   // Navigate to user journey creator
   const handleCreateUserJourney = () => {
     const params = new URLSearchParams()
-    if (projectId) {
-      params.set('projectId', projectId)
-    }
     if (currentFolderId) {
       params.set('folderId', currentFolderId)
     }
@@ -1587,26 +1571,8 @@ export function UserJourneysManager({ projectId, workspaceId }: UserJourneysMana
           onSave={saveEdit}
           journeyName={editForm.name}
           journeyDescription={editForm.description}
-          journeyLayout={editForm.layout}
-          selectedProjectId={editForm.project_id}
-          selectedLawFirmIds={selectedLawFirmIds}
-          lawFirmSearchQuery={lawFirmSearchQuery}
-          projects={projects}
-          lawFirms={lawFirms}
           onNameChange={(name) => setEditForm(prev => ({ ...prev, name }))}
           onDescriptionChange={(description) => setEditForm(prev => ({ ...prev, description }))}
-          onLayoutChange={(layout) => setEditForm(prev => ({ ...prev, layout }))}
-          onStatusChange={(status) => setEditForm(prev => ({ ...prev, status }))}
-          onProjectChange={(project_id) => setEditForm(prev => ({ ...prev, project_id }))}
-          onLawFirmSearchChange={setLawFirmSearchQuery}
-          onLawFirmToggle={(firmId, checked) => {
-            if (checked) {
-              setSelectedLawFirmIds(prev => [...prev, firmId])
-            } else {
-              setSelectedLawFirmIds(prev => prev.filter(id => id !== firmId))
-            }
-          }}
-          onAddLawFirmClick={() => setShowAddLawFirmModal(true)}
         />
       )}
 

@@ -141,7 +141,11 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
   }
 }
 
-export const createProject = async (name: string, overview?: string): Promise<Project | null> => {
+export const createProject = async (
+  name: string,
+  overview?: string,
+  explicitWorkspaceId?: string
+): Promise<Project | null> => {
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
     try {
@@ -154,7 +158,7 @@ export const createProject = async (name: string, overview?: string): Promise<Pr
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         short_id: projects.length + 1,
-        workspace_id: 'local_workspace'
+        workspace_id: explicitWorkspaceId || 'local_workspace'
       }
       
       const updatedProjects = [newProject, ...projects]
@@ -167,12 +171,41 @@ export const createProject = async (name: string, overview?: string): Promise<Pr
   }
 
   try {
+    let workspaceId = explicitWorkspaceId
+
+    if (!workspaceId) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('No authenticated user')
+        return null
+      }
+
+      const { data: workspaceUser, error: workspaceError } = await supabase
+        .from('workspace_users')
+        .select('workspace_id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (workspaceError) {
+        console.error('Error fetching workspace membership:', workspaceError)
+        return null
+      }
+
+      if (!workspaceUser?.workspace_id) {
+        console.error('No workspace membership found for user')
+        return null
+      }
+
+      workspaceId = workspaceUser.workspace_id
+    }
+
     const { data, error } = await supabase
       .from('projects')
       .insert([
         {
           name,
-          overview: overview || null
+          overview: overview || null,
+          workspace_id: workspaceId
         }
       ])
       .select()
