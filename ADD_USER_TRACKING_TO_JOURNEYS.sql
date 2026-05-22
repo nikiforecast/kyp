@@ -16,8 +16,8 @@ CREATE INDEX IF NOT EXISTS idx_user_journeys_created_by ON user_journeys(created
 CREATE INDEX IF NOT EXISTS idx_user_journeys_updated_by ON user_journeys(updated_by);
 
 -- Add comment to explain the columns
-COMMENT ON COLUMN user_journeys.created_by IS 'User ID of the KYP team member who created this user journey';
-COMMENT ON COLUMN user_journeys.updated_by IS 'User ID of the KYP team member who last modified this user journey';
+COMMENT ON COLUMN user_journeys.created_by IS 'User ID of the Journey Studio team member who created this user journey';
+COMMENT ON COLUMN user_journeys.updated_by IS 'User ID of the Journey Studio team member who last modified this user journey';
 
 -- Verify the changes
 SELECT column_name, data_type, is_nullable 

@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from 'express'
 
-const KYP_MCP_API_KEY = process.env.KYP_MCP_API_KEY
+/** Supports JS_MCP_API_KEY (preferred) and legacy KYP_MCP_API_KEY */
+const MCP_API_KEY = process.env.JS_MCP_API_KEY || process.env.KYP_MCP_API_KEY
 
 /**
- * Validates the Authorization header against KYP_MCP_API_KEY.
+ * Validates the Authorization header against the MCP API key.
  * When adding the connector in Claude Cowork, use this key as the authorization_token.
  */
 export function requireApiKey(
@@ -11,12 +12,12 @@ export function requireApiKey(
   res: Response,
   next: NextFunction
 ): void {
-  if (!KYP_MCP_API_KEY) {
+  if (!MCP_API_KEY) {
     res.status(500).json({
       jsonrpc: '2.0',
       error: {
         code: -32603,
-        message: 'Server misconfiguration: KYP_MCP_API_KEY not set',
+        message: 'Server misconfiguration: JS_MCP_API_KEY not set',
       },
       id: null,
     })
@@ -37,7 +38,7 @@ export function requireApiKey(
   }
 
   const token = authHeader.slice(7)
-  if (token !== KYP_MCP_API_KEY) {
+  if (token !== MCP_API_KEY) {
     res.status(401).json({
       jsonrpc: '2.0',
       error: {

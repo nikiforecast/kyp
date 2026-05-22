@@ -19,7 +19,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3100
 function createServer(): McpServer {
   const server = new McpServer(
     {
-      name: 'kyp-connector',
+      name: 'js-connector',
       version: '1.0.0',
     },
     { capabilities: { logging: {} } }
@@ -111,17 +111,17 @@ app.get('/mcp', (req, res) => {
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'kyp-mcp-connector',
+    service: 'js-mcp-connector',
     version: '1.0.0',
   })
 })
 
 const host = process.env.HOST || '0.0.0.0'
 app.listen(PORT, host, () => {
-  console.log(`KYP MCP Connector running on port ${PORT}`)
+  console.log(`Journey Studio MCP Connector running on port ${PORT}`)
   console.log(`MCP endpoint: http://localhost:${PORT}/mcp`)
-  if (!process.env.KYP_MCP_API_KEY) {
-    console.warn('⚠️  KYP_MCP_API_KEY not set - authentication will fail')
+  if (!process.env.JS_MCP_API_KEY && !process.env.KYP_MCP_API_KEY) {
+    console.warn('⚠️  JS_MCP_API_KEY not set - authentication will fail')
   }
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.warn('⚠️  Supabase not configured - tools will return empty data')

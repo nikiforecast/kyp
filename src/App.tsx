@@ -70,7 +70,7 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingState message="Loading KYP Platform..." />
+        <LoadingState message="Loading Journey Studio..." />
       </div>
     )
   }

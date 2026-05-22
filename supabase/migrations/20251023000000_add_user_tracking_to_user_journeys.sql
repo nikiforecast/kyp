@@ -1,5 +1,5 @@
 -- Add user tracking columns to user_journeys table
--- This tracks which KYP team member created and last modified each user journey
+-- This tracks which Journey Studio team member created and last modified each user journey
 
 -- Add created_by column (references auth.users)
 ALTER TABLE user_journeys
@@ -16,6 +16,6 @@ CREATE INDEX IF NOT EXISTS idx_user_journeys_created_by ON user_journeys(created
 CREATE INDEX IF NOT EXISTS idx_user_journeys_updated_by ON user_journeys(updated_by);
 
 -- Add comment to explain the columns
-COMMENT ON COLUMN user_journeys.created_by IS 'User ID of the KYP team member who created this user journey';
-COMMENT ON COLUMN user_journeys.updated_by IS 'User ID of the KYP team member who last modified this user journey';
+COMMENT ON COLUMN user_journeys.created_by IS 'User ID of the Journey Studio team member who created this user journey';
+COMMENT ON COLUMN user_journeys.updated_by IS 'User ID of the Journey Studio team member who last modified this user journey';
 

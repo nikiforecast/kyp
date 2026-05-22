@@ -244,7 +244,7 @@ Deno.serve(async (req: Request) => {
           type: 'header',
           text: {
             type: 'plain_text',
-            text: 'New Note from KYP'
+            text: 'New Note from Journey Studio'
           }
         },
         {

@@ -28,7 +28,7 @@ export function WorkspaceOverview({
     <div className="flex-1 p-6 space-y-6 overflow-y-auto">
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Workspace Overview</h2>
-        <p className="text-gray-600">Welcome to your Know Your Project collaborative workspace</p>
+        <p className="text-gray-600">Welcome to your Journey Studio collaborative workspace</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">

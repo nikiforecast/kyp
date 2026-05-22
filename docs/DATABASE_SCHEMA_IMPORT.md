@@ -1,4 +1,4 @@
-# KYP database schema import
+# Journey Studio database schema import
 
 This project’s schema is defined by ordered SQL migrations under `supabase/migrations/`. For a **single file** you can run in another environment, use:
 
@@ -7,7 +7,7 @@ This project’s schema is defined by ordered SQL migrations under `supabase/mig
 Regenerate it anytime after adding migrations:
 
 ```bash
-( printf '%s\n' '-- KYP consolidated (see docs/DATABASE_SCHEMA_IMPORT.md)'; \
+( printf '%s\n' '-- Journey Studio consolidated (see docs/DATABASE_SCHEMA_IMPORT.md)'; \
   for f in $(ls supabase/migrations/*.sql | LC_ALL=C sort); do \
     echo ""; echo "-- $(basename "$f")"; cat "$f"; \
   done ) > docs/kyp_database_schema.sql
@@ -93,7 +93,7 @@ Triggers in some migrations attach to **`auth.users`** (e.g. auto-add workspace 
 
 ## What the consolidated file contains
 
-- **Tables, constraints, indexes** for KYP (workspaces, projects, user journeys, law firms, examples, etc.).
+- **Tables, constraints, indexes** for Journey Studio (workspaces, projects, user journeys, law firms, examples, etc.).
 - **Row Level Security** policies on most tables.
 - **Functions / triggers** where migrations define them.
 - **Data inserts** in a few migrations (e.g. seed rows, backfills). Replaying on a non-empty DB may conflict — prefer migrations on a **fresh** database.

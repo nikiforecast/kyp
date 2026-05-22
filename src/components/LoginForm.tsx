@@ -137,7 +137,7 @@ export function LoginForm() {
   const renderHeader = (title: string, subtitle?: string) => (
     <div className="text-center mb-8">
       <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-        <span className="text-white font-bold text-2xl">KYP</span>
+        <span className="text-white font-bold text-2xl">JS</span>
       </div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
       {subtitle && <p className="text-gray-600">{subtitle}</p>}
@@ -357,7 +357,7 @@ export function LoginForm() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          {renderHeader(isSignUp ? 'Create account' : 'Welcome to KYP', isSignUp ? 'Sign up with your email address' : undefined)}
+          {renderHeader(isSignUp ? 'Create account' : 'Welcome to Journey Studio', isSignUp ? 'Sign up with your email address' : undefined)}
           {renderDomainRestriction()}
           {renderGoogleButton()}
 

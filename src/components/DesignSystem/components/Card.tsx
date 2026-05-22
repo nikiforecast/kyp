@@ -65,7 +65,7 @@ export function Card({
   
   return (
     <div 
-      data-component="KYP-card"
+      data-component="JS-card"
       className={classes}
       onClick={handleClick}
       role={isClickable ? 'button' : undefined}

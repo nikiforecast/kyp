@@ -89,7 +89,7 @@ export function SettingsManager({
     { id: 'user-roles', label: 'User Roles', icon: UserCheck },
     { id: 'platforms', label: 'Platforms', icon: Server },
     { id: 'note-templates', label: 'Note Templates', icon: FileText },
-    { id: 'team', label: 'KYP Team', icon: UserPlus },
+    { id: 'team', label: 'JS Team', icon: UserPlus },
   ]
 
   const renderContent = () => {
