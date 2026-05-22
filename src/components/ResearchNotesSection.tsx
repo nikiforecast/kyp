@@ -170,7 +170,7 @@ export function ResearchNotesSection({
               onChange={(e) => setSelectedFirmType(e.target.value)}
               className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">All Firm Types</option>
+              <option value="">All Account Types</option>
               {(() => {
                 // Count notes for each firm type
                 const centralisedCount = notes.filter(note => {

@@ -688,7 +688,7 @@ export function ProjectViewRenderer({
 
   const workspaceMenuItems = [
     { id: 'projects', label: 'Epics', icon: FolderOpen },
-    { id: 'law-firms', label: 'Law Firms', icon: Building2 },
+    { id: 'law-firms', label: 'Accounts', icon: Building2 },
     { id: 'user-roles', label: 'User Roles', icon: UserCheck },
     { id: 'stakeholders', label: 'Stakeholders', icon: Users },
     { id: 'team', label: 'KYP Team', icon: UserPlus },

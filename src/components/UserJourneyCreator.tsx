@@ -5452,13 +5452,13 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Law Firms
+                  Accounts
                 </label>
                 <input
                   type="text"
                   value={lawFirmSearchQuery}
                   onChange={(e) => setLawFirmSearchQuery(e.target.value)}
-                  placeholder="Search law firms..."
+                  placeholder="Search accounts..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-2"
                 />
                 <div className="border border-gray-300 rounded-md max-h-48 overflow-y-auto">
@@ -5492,7 +5492,7 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
                     firm.name.toLowerCase().includes(lawFirmSearchQuery.toLowerCase())
                   ).length === 0 && (
                     <div className="px-3 py-4 text-center">
-                      <p className="text-sm text-gray-500 mb-2">No law firms found</p>
+                      <p className="text-sm text-gray-500 mb-2">No accounts found</p>
                       <Button
                         variant="outline"
                         size="small"
@@ -5501,14 +5501,14 @@ export function UserJourneyCreator({ userRoles = [], projectId, journeyId, third
                           setShowAddLawFirmModal(true)
                         }}
                       >
-                        Add Law Firm
+                        Add Account
                       </Button>
                     </div>
                   )}
                 </div>
                 {selectedLawFirmIds.length > 0 && (
                   <div className="mt-2 text-sm text-gray-600">
-                    {selectedLawFirmIds.length} law firm{selectedLawFirmIds.length !== 1 ? 's' : ''} selected
+                    {selectedLawFirmIds.length} account{selectedLawFirmIds.length !== 1 ? 's' : ''} selected
                   </div>
                 )}
               </div>

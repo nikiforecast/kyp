@@ -154,7 +154,7 @@ export function LawFirmForm({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Edit Law Firm' : 'Add New Law Firm'}
+      title={isEditing ? 'Edit Account' : 'Add New Account'}
       size="md"
       closeOnOverlayClick={false}
       footerContent={
@@ -174,14 +174,14 @@ export function LawFirmForm({
             loading={loading}
             onClick={handleFormSubmit}
           >
-            {isEditing ? 'Update Law Firm' : 'Add Law Firm'}
+            {isEditing ? 'Update Account' : 'Add Account'}
           </Button>
         </div>
       }
     >
       <div className="p-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Firm Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Account Name</label>
           <input
             type="text"
             value={lawFirm.name}
