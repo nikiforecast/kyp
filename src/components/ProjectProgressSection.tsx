@@ -11,9 +11,7 @@ import {
   PROGRESS_QUESTIONS,
   type ProgressQuestionKey
 } from '../lib/database'
-import { getAssets } from '../lib/database'
 import type { Project, ProjectProgressStatus, ProjectProgressComment, ProblemOverview, Stakeholder, UserRole, LawFirm, Task } from '../lib/supabase'
-import type { Asset } from '../lib/supabase'
 
 interface ProjectProgressSectionProps {
   project: Project
@@ -50,7 +48,6 @@ export function ProjectProgressSection({
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [pendingCompletion, setPendingCompletion] = useState<Record<string, boolean>>({})
-  const [assets, setAssets] = useState<Asset[]>([])
 
   const questions: QuestionConfig[] = [
 
@@ -83,12 +80,6 @@ export function ProjectProgressSection({
       dynamicInfo: 'Shows current total of Legl - Internal stakeholders'
     },
     {
-      key: PROGRESS_QUESTIONS.DESIGNS_ASSETS,
-      title: 'Have designs been added as assets to the project?',
-      isDynamic: true,
-      dynamicInfo: 'Shows current number of assets added to project'
-    },
-    {
       key: PROGRESS_QUESTIONS.FIGMA_LIBRARY,
       title: 'Has Figma Design library been updated?'
     },
@@ -102,18 +93,7 @@ export function ProjectProgressSection({
 
   useEffect(() => {
     loadProgressData()
-    loadAdditionalData()
   }, [project.id])
-
-  const loadAdditionalData = async () => {
-    try {
-      const assetsData = await getAssets(project.id)
-      
-      setAssets(assetsData)
-    } catch (error) {
-      console.error('Error loading additional data:', error)
-    }
-  }
   const loadProgressData = async () => {
     try {
       setLoading(true)
@@ -375,12 +355,6 @@ export function ProjectProgressSection({
           highlight: true
         }
       
-      case PROGRESS_QUESTIONS.DESIGNS_ASSETS:
-        return {
-          info: `Current: ${assets.length} assets added`,
-          highlight: assets.length === 0
-        }
-      
       case PROGRESS_QUESTIONS.OUTSTANDING_TASKS:
         const outstandingTasks = projectTasks.filter(task => task.status === 'not_complete')
         if (outstandingTasks.length === 0) {
@@ -469,7 +443,6 @@ export function ProjectProgressSection({
                       {question.key === PROGRESS_QUESTIONS.USER_ROLES && <Users size={16} />}
                       {question.key === PROGRESS_QUESTIONS.INTERNAL_STAKEHOLDERS && <Users size={16} />}
                       {question.key === PROGRESS_QUESTIONS.CORE_JOURNEYS && <GitBranch size={16} />}
-                      {question.key === PROGRESS_QUESTIONS.DESIGNS_ASSETS && <Image size={16} />}
                       {question.key === PROGRESS_QUESTIONS.OUTSTANDING_TASKS && <FileText size={16} />}
                       <span>{dynamicInfo}</span>
                     </div>
