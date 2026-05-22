@@ -1,6 +1,6 @@
-# KYP MCP Connector
+# Journey Studio MCP Connector
 
-A Model Context Protocol (MCP) connector that enables Claude Cowork to interact with your KYP (Know Your Product) data. Claude can search projects, user journeys, examples, and stakeholders directly from the Cowork interface.
+A Model Context Protocol (MCP) connector that enables Claude Cowork to interact with your Journey Studio (JS) data. Claude can search projects, user journeys, examples, and stakeholders directly from the Cowork interface.
 
 ## Features
 
@@ -14,7 +14,7 @@ A Model Context Protocol (MCP) connector that enables Claude Cowork to interact 
 ## Prerequisites
 
 - Node.js 20+
-- A KYP instance with Supabase backend
+- A Journey Studio instance with Supabase backend
 
 ## Setup
 
@@ -37,7 +37,7 @@ Required variables:
 
 | Variable | Description |
 |----------|-------------|
-| `KYP_MCP_API_KEY` | Secret API key for authenticating requests. Use this when adding the connector in Claude Cowork. |
+| `JS_MCP_API_KEY` | Secret API key for authenticating requests. Use this when adding the connector in Claude Cowork. (`KYP_MCP_API_KEY` is still supported as a legacy alias.) |
 | `SUPABASE_URL` | Your Supabase project URL (e.g. `https://xxx.supabase.co`) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase Service Role key (from Project Settings → API). **Never expose this client-side.** |
 
@@ -66,7 +66,7 @@ See **[CLAUDE_COWORK_SETUP.md](./CLAUDE_COWORK_SETUP.md)** for step-by-step inst
 1. Deploy the connector (or run locally + ngrok) so you have an HTTPS URL
 2. Go to **Claude** → **Settings** → **Connectors** → **Add** → **Add custom connector**
 3. Enter your MCP URL: `https://your-url/mcp`
-4. Enter your `KYP_MCP_API_KEY` as the authorization token when prompted
+4. Enter your `JS_MCP_API_KEY` as the authorization token when prompted
 5. Click **Connect**
 
 ## Deployment
@@ -97,7 +97,7 @@ The connector must be **publicly accessible over HTTPS** for Claude Cowork to co
 
 ## Security
 
-- **API key**: Use a strong, random value for `KYP_MCP_API_KEY`. Rotate it if compromised.
+- **API key**: Use a strong, random value for `JS_MCP_API_KEY`. Rotate it if compromised.
 - **Service role key**: The Supabase Service Role key bypasses RLS. Keep it secret and never commit to version control.
 - **HTTPS**: Always use HTTPS in production. Claude requires `https://` URLs.
 - **Rate limiting**: Consider adding rate limiting (e.g. via a reverse proxy) for production.
@@ -114,6 +114,6 @@ This launches the MCP Inspector for testing your server locally. Configure the i
 
 **"Supabase not configured"** – Ensure `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set in your environment.
 
-**"Unauthorized"** – Verify the `Authorization: Bearer <your-api-key>` header matches `KYP_MCP_API_KEY`.
+**"Unauthorized"** – Verify the `Authorization: Bearer <your-api-key>` header matches `JS_MCP_API_KEY`.
 
 **Empty data** – Check that your Supabase project has the required tables (`projects`, `user_journeys`, `examples`, `stakeholders`) and that the Service Role key has access.

@@ -1,7 +1,7 @@
 {
-  "name": "kyp-mcp-connector",
+  "name": "js-mcp-connector",
   "version": "1.0.0",
-  "description": "MCP connector for KYP - Claude Cowork integration",
+  "description": "MCP connector for Journey Studio (JS) - Claude Cowork integration",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

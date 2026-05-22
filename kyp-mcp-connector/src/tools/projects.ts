@@ -6,7 +6,7 @@ export const listProjectsTool = {
   config: {
     title: 'List Projects',
     description:
-      'List all projects in KYP. Returns project names, IDs, and overviews.',
+      'List all projects in Journey Studio. Returns project names, IDs, and overviews.',
     inputSchema: {},
   },
   handler: async (): Promise<{ content: Array<{ type: 'text'; text: string }> }> => {

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the implementation plan for adding a new content type called 'Examples' to the KYP platform. Examples will allow users to document user journey scenarios with actors, goals, actions, errors, and outcomes.
+This document outlines the implementation plan for adding a new content type called 'Examples' to the Journey Studio platform. Examples will allow users to document user journey scenarios with actors, goals, actions, errors, and outcomes.
 
 ## Requirements
 
@@ -245,6 +245,6 @@ query GetExamples($projectId: UUID, $actor: String) {
 
 ## Conclusion
 
-The Examples content type will provide users with a powerful way to document and share user journey scenarios. The implementation follows established patterns in the KYP platform and integrates seamlessly with existing functionality while maintaining security and performance standards.
+The Examples content type will provide users with a powerful way to document and share user journey scenarios. The implementation follows established patterns in the Journey Studio platform and integrates seamlessly with existing functionality while maintaining security and performance standards.
 
 The phased approach ensures a smooth rollout with minimal disruption to existing users while providing immediate value through the new content type.

@@ -1036,7 +1036,7 @@ export function UserJourneyCreator({ userRoles = [], journeyId, thirdParties: in
 
     // Add type identifier for cross-tab compatibility
     const copyData = {
-      type: 'kyp-user-journey-nodes',
+      type: 'js-user-journey-nodes',
       version: '1.0',
       nodes: selectedNodes,
       edges: relevantEdges
@@ -1073,7 +1073,7 @@ export function UserJourneyCreator({ userRoles = [], journeyId, thirdParties: in
 
     // Add type identifier for cross-tab compatibility
     const copyData = {
-      type: 'kyp-user-journey-regions',
+      type: 'js-user-journey-regions',
       version: '1.0',
       regions: selectedRegions,
       nodes: nodesInRegions,
@@ -1117,15 +1117,15 @@ export function UserJourneyCreator({ userRoles = [], journeyId, thirdParties: in
         const parsed = JSON.parse(clipboardText)
         
         // Check if it's our format (for cross-tab compatibility)
-        if (parsed.type === 'kyp-user-journey-nodes' && Array.isArray(parsed.nodes)) {
+        if ((parsed.type === 'js-user-journey-nodes' || parsed.type === 'kyp-user-journey-nodes') && Array.isArray(parsed.nodes)) {
           copyData = {
             nodes: parsed.nodes,
             edges: parsed.edges || []
           }
-        } else if (parsed.type === 'kyp-user-journey-regions' && Array.isArray(parsed.regions)) {
+        } else if ((parsed.type === 'js-user-journey-regions' || parsed.type === 'kyp-user-journey-regions') && Array.isArray(parsed.regions)) {
           // Region paste format
           copyData = {
-            type: 'kyp-user-journey-regions',
+            type: 'js-user-journey-regions',
             regions: parsed.regions,
             nodes: parsed.nodes || [],
             edges: parsed.edges || []
@@ -1149,7 +1149,7 @@ export function UserJourneyCreator({ userRoles = [], journeyId, thirdParties: in
       }
 
       // Handle region paste
-      if (copyData.type === 'kyp-user-journey-regions' && copyData.regions && copyData.regions.length > 0) {
+      if ((copyData.type === 'js-user-journey-regions' || copyData.type === 'kyp-user-journey-regions') && copyData.regions && copyData.regions.length > 0) {
         // Get the React Flow instance to access viewport utilities
         const reactFlowInstance = reactFlowInstanceRef.current
         if (!reactFlowInstance) {

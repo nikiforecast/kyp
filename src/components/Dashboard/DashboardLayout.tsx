@@ -38,7 +38,7 @@ export function DashboardLayout({
         {/* Logo */}
         <div className="p-3 border-b border-gray-700">
           <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-sm">KYP</span>
+            <span className="text-white font-bold text-sm">JS</span>
           </div>
         </div>
 

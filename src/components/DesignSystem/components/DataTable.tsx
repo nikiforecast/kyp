@@ -198,7 +198,7 @@ export function DataTable<T>({
 
   return (
     <div 
-    data-component="KYP-table"
+    data-component="JS-table"
     className={`space-y-4 ${className}`}>
      
       

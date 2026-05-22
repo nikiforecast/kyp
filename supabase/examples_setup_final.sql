@@ -1,4 +1,4 @@
--- Setup Examples Content Type for KYP Platform
+-- Setup Examples Content Type for Journey Studio Platform
 -- Copy and paste this entire script into Supabase SQL Editor and run it
 
 -- Create examples table

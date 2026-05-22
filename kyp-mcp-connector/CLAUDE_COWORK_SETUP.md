@@ -1,4 +1,4 @@
-# Connecting KYP MCP Connector to Claude Cowork
+# Connecting Journey Studio MCP Connector to Claude Cowork
 
 ## Important: Your MCP server must be publicly accessible
 
@@ -30,7 +30,7 @@ Claude Cowork runs in the cloud and connects to your MCP server over the interne
 
 ## Option B: Deploy to production
 
-Deploy the connector to Railway, Render, or similar. Set environment variables (`KYP_MCP_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) in the platform's dashboard.
+Deploy the connector to Railway, Render, or similar. Set environment variables (`JS_MCP_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) in the platform's dashboard.
 
 Your MCP endpoint will be something like: `https://your-app.railway.app/mcp`
 
@@ -46,7 +46,7 @@ Your MCP endpoint will be something like: `https://your-app.railway.app/mcp`
 4. Click **Add**
 5. Click **Add custom connector**
 6. Enter your **remote MCP server URL**: `https://your-url/mcp` (include the `/mcp` path)
-7. If prompted for **Authorization** or **API key**, enter your `KYP_MCP_API_KEY` value
+7. If prompted for **Authorization** or **API key**, enter your `JS_MCP_API_KEY` value
 8. Click **Add** / **Connect**
 
 ### Team and Enterprise plans
@@ -71,8 +71,8 @@ Your MCP endpoint will be something like: `https://your-app.railway.app/mcp`
 
 1. Start a new conversation or open an existing one
 2. Click the **+** button (or "Add" / "Connectors" in the chat interface)
-3. Enable the **KYP** connector for this conversation
-4. Ask Claude to use KYP — e.g. "List my projects" or "Show me user journeys for project X"
+3. Enable the **Journey Studio** connector for this conversation
+4. Ask Claude to use Journey Studio — e.g. "List my projects" or "Show me user journeys for project X"
 
 ---
 
@@ -81,7 +81,7 @@ Your MCP endpoint will be something like: `https://your-app.railway.app/mcp`
 | Issue | Solution |
 |-------|----------|
 | "Connection failed" | Ensure your server is running and the URL is reachable (try opening it in a browser — you may get 405 for GET, which is expected) |
-| "Unauthorized" | Verify `KYP_MCP_API_KEY` in your `.env` matches what you entered in Claude |
+| "Unauthorized" | Verify `JS_MCP_API_KEY` in your `.env` matches what you entered in Claude |
 | Tools don't appear | Check that the server is running and the URL ends with `/mcp` |
 | Empty data | Verify `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set correctly |
 
@@ -91,4 +91,4 @@ Your MCP endpoint will be something like: `https://your-app.railway.app/mcp`
 
 1. **Health check:** Open `https://your-url/health` in a browser — you should see `{"status":"ok",...}`
 2. **MCP endpoint:** The `/mcp` endpoint expects POST requests with JSON-RPC. A GET request may return 405 — that's normal.
-3. **In Claude:** Ask "What KYP tools do you have?" or "List my KYP projects" to test.
+3. **In Claude:** Ask "What Journey Studio tools do you have?" or "List my projects" to test.

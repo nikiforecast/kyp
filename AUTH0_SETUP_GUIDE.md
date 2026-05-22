@@ -1,6 +1,6 @@
 # Auth0 Setup Guide for Google Login
 
-This guide will walk you through setting up Auth0 for Google OAuth authentication in your KYP application.
+This guide will walk you through setting up Auth0 for Google OAuth authentication in your Journey Studio application.
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ This guide will walk you through setting up Auth0 for Google OAuth authenticatio
 1. Log in to your [Auth0 Dashboard](https://manage.auth0.com/)
 2. Navigate to **Applications** → **Applications** in the sidebar
 3. Click **Create Application**
-4. Enter a name for your application (e.g., "KYP Platform")
+4. Enter a name for your application (e.g., "Journey Studio")
 5. Select **Single Page Web Applications** as the application type
 6. Click **Create**
 
