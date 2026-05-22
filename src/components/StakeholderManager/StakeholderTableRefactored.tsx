@@ -140,7 +140,7 @@ export function StakeholderTableRefactored({
     },
     {
       key: 'law_firm',
-      header: 'Law Firm',
+      header: 'Account',
       sortable: true,
       render: (stakeholder) => {
         const lawFirm = getLawFirmById(stakeholder.law_firm_id)

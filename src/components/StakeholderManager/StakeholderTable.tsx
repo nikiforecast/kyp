@@ -134,7 +134,7 @@ export function StakeholderTable({
     },
     {
       key: 'law_firm',
-      header: 'Law Firm',
+      header: 'Account',
       sortable: true,
       render: (stakeholder: Stakeholder) => (
         <div 

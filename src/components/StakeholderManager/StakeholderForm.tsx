@@ -84,7 +84,7 @@ export function StakeholderForm({
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Law Firm</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Account</label>
               <select
                 value={stakeholder.law_firm_id}
                 onChange={(e) => onChange({ law_firm_id: e.target.value })}
@@ -92,7 +92,7 @@ export function StakeholderForm({
                 disabled={loading}
                 required
               >
-                <option value="">Select a law firm...</option>
+                <option value="">Select an account...</option>
                 {lawFirms.filter(firm => firm.status === 'active').sort((a, b) => a.name.localeCompare(b.name)).map((firm) => (
                   <option key={firm.id} value={firm.id}>
                     {firm.name}

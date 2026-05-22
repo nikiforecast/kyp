@@ -260,7 +260,7 @@ export const importStakeholdersFromCSV = async (csvData: string): Promise<{ succ
     const headers = lines[0]?.split(',').map(h => h.trim())
     
     if (!headers || headers.length < 8) {
-      results.errors.push('CSV must have at least 8 columns: Visitor ID, Law Firm ID, Name, Department, Pendo Role, Law Firm Name, User Role, User Permission')
+      results.errors.push('CSV must have at least 8 columns: Visitor ID, Account ID, Name, Department, Pendo Role, Account Name, User Role, User Permission')
       return results
     }
     

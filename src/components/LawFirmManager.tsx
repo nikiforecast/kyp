@@ -297,7 +297,7 @@ export function LawFirmManager({
   if (loading) {
     return (
       <div className="flex-1 p-6 flex items-center justify-center">
-        <LoadingState message="Loading law firms..." size="lg" />
+        <LoadingState message="Loading accounts..." size="lg" />
       </div>
     )
   }
@@ -306,8 +306,8 @@ export function LawFirmManager({
     <div className="flex-1 p-6 space-y-6 overflow-y-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Law Firms</h2>
-          <p className="text-gray-600">Manage law firms and their organizational structure</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Accounts</h2>
+          <p className="text-gray-600">Manage accounts and their organizational structure</p>
         </div>
         <div className="flex items-center gap-3">
           {isOwner && (
@@ -339,7 +339,7 @@ export function LawFirmManager({
             icon={Plus}
             onClick={() => setShowLawFirmForm(true)}
           >
-            Add Law Firm
+            Add Account
           </Button>
         </div>
       </div>
@@ -349,7 +349,7 @@ export function LawFirmManager({
         <div className="bg-white rounded-xl p-6 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Import Results</h3>
           <div className="space-y-2">
-            <p className="text-green-600">✓ Successfully imported {importResults.success} law firms</p>
+            <p className="text-green-600">✓ Successfully imported {importResults.success} accounts</p>
             {importResults.errors.length > 0 && (
               <div>
                 <p className="text-red-600 mb-2">⚠ {importResults.errors.length} errors occurred:</p>
@@ -432,7 +432,7 @@ export function LawFirmManager({
         columns={[
           {
             key: 'name',
-            header: 'Law Firm Name',
+            header: 'Account Name',
             sortable: true,
             width: 'minmax(200px, 1fr)',
             render: (firm) => (
@@ -510,14 +510,14 @@ export function LawFirmManager({
         onDelete={onDeleteLawFirm}
         onBulkDelete={() => setShowBulkDeleteModal(true)}
         emptyStateIcon={Building2}
-        emptyStateMessage="No law firms match your current filters."
+        emptyStateMessage="No accounts match your current filters."
       />
 
       {/* Bulk Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={showBulkDeleteModal}
         onClose={() => setShowBulkDeleteModal(false)}
-        message={`Are you sure you want to delete ${selectedLawFirms.length} law firm${selectedLawFirms.length > 1 ? 's' : ''}? This action cannot be undone.`}
+        message={`Are you sure you want to delete ${selectedLawFirms.length} account${selectedLawFirms.length > 1 ? 's' : ''}? This action cannot be undone.`}
         confirmText="Confirm"
         cancelText="Cancel"
         onConfirm={handleBulkDelete}

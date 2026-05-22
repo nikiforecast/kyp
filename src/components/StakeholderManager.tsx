@@ -362,7 +362,7 @@ export function StakeholderManager({
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="w-20 text-gray-500 font-mono">Column 2:</span>
-                          <span className="font-medium">Law Firm ID</span>
+                          <span className="font-medium">Account ID</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="w-20 text-gray-500 font-mono">Column 3:</span>
@@ -378,7 +378,7 @@ export function StakeholderManager({
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="w-20 text-gray-500 font-mono">Column 6:</span>
-                          <span className="font-medium">Law Firm Name</span>
+                          <span className="font-medium">Account Name</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="w-20 text-gray-500 font-mono">Column 7:</span>
@@ -395,9 +395,9 @@ export function StakeholderManager({
                         <strong>Notes:</strong>
                       </p>
                       <ul className="text-blue-800 text-sm mt-2 space-y-1 list-disc list-inside">
-                        <li>If a stakeholder with the same Visitor ID and Law Firm ID already exists, no duplicate will be created</li>
-                        <li>The system will automatically match Law Firm Names and User Roles to existing records</li>
-                        <li>If a Law Firm or User Role doesn't exist, it will be created automatically</li>
+                        <li>If a stakeholder with the same Visitor ID and Account ID already exists, no duplicate will be created</li>
+                        <li>The system will automatically match Account Names and User Roles to existing records</li>
+                        <li>If an Account or User Role doesn't exist, it will be created automatically</li>
                         <li>For User Permission: 'TRUE' = Administrator, 'FALSE' = General User (case-insensitive)</li>
                         <li>If User Role or User Permission cells are blank, those fields will not be set for the stakeholder</li>
                       </ul>

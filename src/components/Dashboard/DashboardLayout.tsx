@@ -26,7 +26,7 @@ export function DashboardLayout({
   const menuItems: MenuItem[] = [
     { id: 'user-journeys', label: 'User Journeys', icon: Route },
     { id: 'projects', label: 'Epics', icon: FolderOpen },
-    { id: 'law-firms', label: 'Law Firms', icon: Building2 },
+    { id: 'law-firms', label: 'Accounts', icon: Building2 },
     { id: 'stakeholders', label: 'Stakeholders', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'design-system', label: 'Design System', icon: Palette },

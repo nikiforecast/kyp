@@ -340,7 +340,7 @@ export const importLawFirmsFromCSV = async (csvData: string): Promise<{ success:
         if (lawFirm) {
           results.success++
         } else {
-          results.errors.push(`Row ${i + 1}: Failed to create law firm`)
+          results.errors.push(`Row ${i + 1}: Failed to create account`)
         }
         
       } catch (error) {

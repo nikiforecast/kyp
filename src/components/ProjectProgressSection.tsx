@@ -56,7 +56,7 @@ export function ProjectProgressSection({
 
     {
       key: PROGRESS_QUESTIONS.CENTRALISED_DECENTRALISED,
-      title: 'Have both centralised and decentralised firms been included in discovery?',
+      title: 'Have both centralised and decentralised accounts been included in discovery?',
       isDynamic: true,
       dynamicInfo: 'Shows current totals based on assigned stakeholders'
     },
@@ -326,7 +326,7 @@ export function ProjectProgressSection({
         }).length
         
         return {
-          info: `Current: ${centralisedCount} centralised, ${decentralisedCount} decentralised firms`,
+          info: `Current: ${centralisedCount} centralised, ${decentralisedCount} decentralised accounts`,
           highlight: centralisedCount === 0 || decentralisedCount === 0
         }
       
