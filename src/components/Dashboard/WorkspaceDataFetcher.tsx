@@ -18,6 +18,7 @@ import {
   updateUserRole,
   removeUser,
   createWorkspace,
+  activatePendingWorkspaceInvites,
   getUserRoles,
   createUserRole,
   updateCustomUserRole,
@@ -189,6 +190,8 @@ export function WorkspaceDataFetcher({
     try {
       setLoading(true)
 
+      await activatePendingWorkspaceInvites()
+
       const [workspacesData, workspaceUsersData] = await Promise.all([
         getWorkspaces(),
         getWorkspaceUsers(),
@@ -322,11 +325,11 @@ export function WorkspaceDataFetcher({
   const accessibleWorkspaces = useMemo(() => {
     const memberWorkspaceIds = new Set(
       workspaceUsers
-        .filter(wu => wu.status === 'active')
+        .filter(wu => wu.status === 'active' && wu.user_id === user?.id)
         .map(wu => wu.workspace_id)
     )
     return workspaces.filter(w => memberWorkspaceIds.has(w.id))
-  }, [workspaces, workspaceUsers])
+  }, [workspaces, workspaceUsers, user?.id])
 
   const filteredWorkspaceUsers = useMemo(
     () => workspaceUsers.filter(wu => wu.workspace_id === activeWorkspaceId),

@@ -118,7 +118,7 @@ export async function createUserJourneyFolder(
       workspace_id: workspaceId,
       name,
       color,
-      status: 'personal', // Default to personal
+      status: 'shared',
       parent_folder_id: parentFolderId,
       created_by: user.id
     })

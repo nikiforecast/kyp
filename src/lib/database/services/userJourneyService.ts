@@ -46,88 +46,55 @@ export const getUserJourneys = async (
   }
 
   try {
-    // Get current user to filter journeys
-    const { data: { user } } = await supabase.auth.getUser()
-    const currentUserId = user?.id
-    
-    // Check if user is workspace owner or admin (they can see all journeys)
-    let isOwnerOrAdmin = false
-    if (currentUserId) {
-      try {
-        const { data: workspaceUser, error: roleError } = await supabase
-          .from('workspace_users')
-          .select('role')
-          .eq('user_id', currentUserId)
-          .single()
-        
-        // If query succeeds and user is owner/admin, grant access to all journeys
-        if (!roleError && workspaceUser && (workspaceUser.role === 'owner' || workspaceUser.role === 'admin')) {
-          isOwnerOrAdmin = true
-        }
-      } catch (error) {
-        // If there's an error checking role, fall back to regular filtering
-        console.warn('Could not check user role, using default filtering:', error)
-      }
-    }
-    
-    // Fetch journeys and folders in parallel
     let query = supabase
       .from('user_journeys')
       .select('*')
       .order('created_at', { ascending: false })
 
-    // Filter by project if provided
     if (projectId) {
       query = query.eq('project_id', projectId)
     }
 
-    const [journeysResult, foldersResult] = await Promise.all([
+    const foldersPromise = workspaceIdForFolders
+      ? getUserJourneyFolders(workspaceIdForFolders)
+      : Promise.resolve([])
+
+    const projectsPromise =
+      workspaceIdForFolders && supabase
+        ? supabase.from('projects').select('id').eq('workspace_id', workspaceIdForFolders)
+        : Promise.resolve({ data: null, error: null })
+
+    const [journeysResult, foldersResult, projectsResult] = await Promise.all([
       query,
-      getUserJourneyFolders(workspaceIdForFolders).catch(() => [])
+      foldersPromise.catch(() => []),
+      projectsPromise,
     ])
 
     const { data, error } = journeysResult
     const folders = foldersResult || []
 
     if (error) throw error
-    
-    // Create a map of folder IDs to folder status
-    const folderStatusMap = new Map<string, 'personal' | 'shared'>()
-    folders.forEach(folder => {
-      folderStatusMap.set(folder.id, folder.status)
-    })
-    
-    // Helper function to get journey status from folder
-    const getJourneyStatus = (journey: any): 'personal' | 'shared' => {
-      if (!journey.folder_id) return 'personal'
-      return folderStatusMap.get(journey.folder_id) || 'personal'
+
+    let journeys = data || []
+
+    // Scope to the active workspace — RLS may return journeys from multiple workspaces
+    if (workspaceIdForFolders) {
+      const folderIdsInWorkspace = new Set(folders.map(f => f.id))
+      const projectIdsInWorkspace = new Set(
+        (projectsResult.data || []).map((p: { id: string }) => p.id)
+      )
+
+      journeys = journeys.filter(journey =>
+        (journey.folder_id && folderIdsInWorkspace.has(journey.folder_id)) ||
+        (journey.project_id && projectIdsInWorkspace.has(journey.project_id))
+      )
     }
-    
-    // If user is owner/admin, show all journeys
-    if (isOwnerOrAdmin) {
-      return (data || []).map((journey: any) => {
-        // Remove status if it exists (legacy data)
-        const { status, ...journeyWithoutStatus } = journey
-        return journeyWithoutStatus
-      })
-    }
-    
-    // Filter results: show shared journeys (in shared folders) to all, but personal journeys only to creator
-    const filteredData = (data || []).filter((journey: any) => {
-      // Determine journey status from folder
-      const isShared = getJourneyStatus(journey) === 'shared'
-      
-      // If shared, show to everyone
-      if (isShared) return true
-      // If personal, only show to creator
-      return journey.created_by === currentUserId
-    }).map((journey: any) => {
-      // Remove status if it exists (legacy data)
-      const { status, ...journeyWithoutStatus } = journey
+
+    // Workspace members see all journeys RLS allows — no personal/shared filtering
+    return journeys.map((journey: UserJourney & { status?: string }) => {
+      const { status: _status, ...journeyWithoutStatus } = journey
       return journeyWithoutStatus
     })
-    
-    return filteredData
   } catch (error) {
     console.error('Error fetching user journeys:', error)
     

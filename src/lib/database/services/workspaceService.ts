@@ -1,6 +1,19 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
 import type { Workspace, WorkspaceUser } from '../../supabase'
 
+export const activatePendingWorkspaceInvites = async (): Promise<void> => {
+  if (!isSupabaseConfigured || !supabase) return
+
+  try {
+    const { error } = await supabase.rpc('activate_my_pending_invites')
+    if (error) {
+      console.error('Error activating pending workspace invites:', error)
+    }
+  } catch (error) {
+    console.error('Error activating pending workspace invites:', error)
+  }
+}
+
 export const createWorkspace = async (
   name: string
 ): Promise<{ workspace: Workspace | null; error: string | null }> => {
@@ -32,7 +45,6 @@ export const createWorkspace = async (
   }
 }
 
-// Workspace functions
 export const getWorkspaces = async (): Promise<Workspace[]> => {
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
