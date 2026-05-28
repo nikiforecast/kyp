@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, createElement, type ReactNode } from 'react'
 import { supabase, isSupabaseConfigured, forceSignOut, SupabaseAuthError } from '../lib/supabase'
+import { isPlatformAdmin as checkPlatformAdmin } from '../lib/platformAdmin'
 import type { User } from '@supabase/supabase-js'
 
 // When unset/false-ish: accept any OAuth user with an email (avoids forgetting env at build).
@@ -87,6 +88,7 @@ interface AuthContextValue {
   updateUserPassword: (newPassword: string) => Promise<{ error: { message: string } | null }>
   clearPasswordRecovery: () => void
   restrictLoginToLeglDomain: boolean
+  isPlatformAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -390,6 +392,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateUserPassword,
     clearPasswordRecovery,
     restrictLoginToLeglDomain,
+    isPlatformAdmin: checkPlatformAdmin(user),
   }
 
   return createElement(AuthContext.Provider, { value }, children)

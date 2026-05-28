@@ -6,17 +6,17 @@
 */
 
 -- Replace any prior helper definitions (parameter names may differ)
-DROP FUNCTION IF EXISTS public.can_access_user_journey_node(uuid);
-DROP FUNCTION IF EXISTS public.can_access_theme(uuid);
-DROP FUNCTION IF EXISTS public.can_access_example(uuid);
-DROP FUNCTION IF EXISTS public.can_access_research_note(uuid);
-DROP FUNCTION IF EXISTS public.can_access_asset(uuid);
-DROP FUNCTION IF EXISTS public.can_access_user_story(uuid);
-DROP FUNCTION IF EXISTS public.can_access_user_journey(uuid);
-DROP FUNCTION IF EXISTS public.can_access_project(uuid);
-DROP FUNCTION IF EXISTS public.is_workspace_admin(uuid);
-DROP FUNCTION IF EXISTS public.is_workspace_member(uuid);
-DROP FUNCTION IF EXISTS public.current_user_workspace_ids();
+DROP FUNCTION IF EXISTS public.can_access_user_journey_node(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.can_access_theme(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.can_access_example(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.can_access_research_note(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.can_access_asset(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.can_access_user_story(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.can_access_user_journey(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.can_access_project(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.is_workspace_admin(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.is_workspace_member(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.current_user_workspace_ids() CASCADE;
 
 -- ---------------------------------------------------------------------------
 -- Helper functions (SECURITY DEFINER — bypass RLS on workspace_users)

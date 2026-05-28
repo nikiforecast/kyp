@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { SupabaseAuthError } from '../../lib/supabase'
+import { resolveActiveWorkspaceId, setActiveWorkspaceId } from '../../lib/activeWorkspace'
 import { MainContentRenderer } from './MainContentRenderer'
+import { WorkspaceSwitcher } from '../WorkspaceSwitcher'
 import {
   getWorkspaces,
   getProjectByShortId,
@@ -15,6 +17,7 @@ import {
   createUser,
   updateUserRole,
   removeUser,
+  createWorkspace,
   getUserRoles,
   createUserRole,
   updateCustomUserRole,
@@ -56,7 +59,7 @@ export function WorkspaceDataFetcher({
   onSignOut,
 }: WorkspaceDataFetcherProps) {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, isPlatformAdmin } = useAuth()
 
   const [currentView, setCurrentView] = useState('user-journeys')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
@@ -67,6 +70,7 @@ export function WorkspaceDataFetcher({
   const [selectedLawFirm, setSelectedLawFirm] = useState<LawFirm | null>(null)
 
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
+  const [activeWorkspaceId, setActiveWorkspaceIdState] = useState('')
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([])
   const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[]>([])
   const [userRoles, setUserRoles] = useState<UserRole[]>([])
@@ -77,8 +81,10 @@ export function WorkspaceDataFetcher({
   const [loadingBackgroundData, setLoadingBackgroundData] = useState(true)
 
   useEffect(() => {
-    fetchAllData()
-  }, [])
+    if (user) {
+      fetchAllData()
+    }
+  }, [user?.id])
 
   useEffect(() => {
     const handleRouteNavigation = async () => {
@@ -190,6 +196,9 @@ export function WorkspaceDataFetcher({
 
       setWorkspaces(workspacesData)
       setWorkspaceUsers(workspaceUsersData)
+
+      const resolvedId = resolveActiveWorkspaceId(workspacesData, workspaceUsersData, user?.id)
+      setActiveWorkspaceIdState(resolvedId)
       setLoading(false)
 
       setLoadingBackgroundData(true)
@@ -294,13 +303,63 @@ export function WorkspaceDataFetcher({
     }
   }
 
+  const handleSelectWorkspace = (workspaceId: string) => {
+    setActiveWorkspaceId(workspaceId)
+    setActiveWorkspaceIdState(workspaceId)
+  }
+
+  const handleCreateWorkspace = async (name: string) => {
+    const result = await createWorkspace(name)
+    if (result.workspace) {
+      setWorkspaces(prev => [result.workspace!, ...prev])
+      const users = await getWorkspaceUsers()
+      setWorkspaceUsers(users)
+      handleSelectWorkspace(result.workspace.id)
+    }
+    return result
+  }
+
+  const accessibleWorkspaces = useMemo(() => {
+    const memberWorkspaceIds = new Set(
+      workspaceUsers
+        .filter(wu => wu.status === 'active')
+        .map(wu => wu.workspace_id)
+    )
+    return workspaces.filter(w => memberWorkspaceIds.has(w.id))
+  }, [workspaces, workspaceUsers])
+
+  const filteredWorkspaceUsers = useMemo(
+    () => workspaceUsers.filter(wu => wu.workspace_id === activeWorkspaceId),
+    [workspaceUsers, activeWorkspaceId]
+  )
+
+  const filteredStakeholders = useMemo(
+    () => stakeholders.filter(s => s.workspace_id === activeWorkspaceId),
+    [stakeholders, activeWorkspaceId]
+  )
+
+  const filteredUserRoles = useMemo(
+    () => userRoles.filter(r => r.workspace_id === activeWorkspaceId),
+    [userRoles, activeWorkspaceId]
+  )
+
+  const filteredPlatforms = useMemo(
+    () => platforms.filter(p => p.workspace_id === activeWorkspaceId),
+    [platforms, activeWorkspaceId]
+  )
+
+  const filteredLawFirms = useMemo(
+    () => lawFirms.filter(f => f.workspace_id === activeWorkspaceId),
+    [lawFirms, activeWorkspaceId]
+  )
+
   const handleCreateUser = async (
     email: string,
     role: 'admin' | 'member',
     fullName?: string,
     team?: 'Design' | 'Product' | 'Engineering' | 'Other'
   ) => {
-    const result = await createUser(email, role, fullName, team)
+    const result = await createUser(email, role, fullName, team, activeWorkspaceId)
     if (result.user) {
       setWorkspaceUsers([result.user, ...workspaceUsers])
     }
@@ -437,55 +496,62 @@ export function WorkspaceDataFetcher({
     return results
   }
 
-  const workspaceId =
-    workspaces[0]?.id ||
-    (user?.id ? workspaceUsers.find(wu => wu.user_id === user.id)?.workspace_id : undefined) ||
-    workspaceUsers[0]?.workspace_id ||
-    ''
+  const workspaceId = activeWorkspaceId
 
   return (
-    <MainContentRenderer
-      currentView={currentView}
-      loading={loading}
-      loadingBackgroundData={loadingBackgroundData}
-      workspaceId={workspaceId}
-      stakeholders={stakeholders}
-      workspaceUsers={workspaceUsers}
-      userRoles={userRoles}
-      platforms={platforms}
-      lawFirms={lawFirms}
-      selectedProject={selectedProject}
-      selectedStakeholder={selectedStakeholder}
-      stakeholderDetailOrigin={stakeholderDetailOrigin}
-      originLawFirm={originLawFirm}
-      selectedLawFirm={selectedLawFirm}
-      user={user}
-      onBackToWorkspace={handleBackToWorkspace}
-      onCreateStakeholder={handleCreateStakeholder}
-      onUpdateStakeholder={handleUpdateStakeholder}
-      onDeleteStakeholder={handleDeleteStakeholder}
-      onSelectStakeholder={handleSelectStakeholder}
-      onSelectStakeholderFromLawFirm={handleSelectStakeholderFromLawFirm}
-      onStakeholderBack={handleStakeholderBack}
-      onCreateUser={handleCreateUser}
-      onUpdateWorkspaceUser={handleUpdateWorkspaceUser}
-      onUpdateWorkspaceUserRole={handleUpdateWorkspaceUserRole}
-      onRemoveUser={handleRemoveUser}
-      onCreateUserRole={handleCreateUserRole}
-      onUpdateUserRoleDefinition={handleUpdateUserRoleDefinition}
-      onDeleteUserRole={handleDeleteUserRole}
-      onNavigateToStakeholdersWithFilter={handleNavigateToStakeholdersWithFilter}
-      onCreatePlatform={handleCreatePlatform}
-      onUpdatePlatform={handleUpdatePlatform}
-      onDeletePlatform={handleDeletePlatform}
-      onCreateLawFirm={handleCreateLawFirm}
-      onUpdateLawFirm={handleUpdateLawFirm}
-      onDeleteLawFirm={handleDeleteLawFirm}
-      onImportLawFirmsCSV={handleImportLawFirmsCSV}
-      onDeleteAllLawFirms={handleDeleteAllLawFirms}
-      onImportStakeholdersCSV={handleImportStakeholdersCSV}
-      onBackFromLawFirm={handleBackFromLawFirm}
-      onSignOut={onSignOut}
-    />
+    <>
+      <WorkspaceSwitcher
+        workspaces={accessibleWorkspaces}
+        activeWorkspaceId={workspaceId}
+        onSelectWorkspace={handleSelectWorkspace}
+      />
+      <MainContentRenderer
+        currentView={currentView}
+        loading={loading}
+        loadingBackgroundData={loadingBackgroundData}
+        workspaceId={workspaceId}
+        workspaces={accessibleWorkspaces}
+        isPlatformAdmin={isPlatformAdmin}
+        stakeholders={filteredStakeholders}
+        workspaceUsers={filteredWorkspaceUsers}
+        userRoles={filteredUserRoles}
+        platforms={filteredPlatforms}
+        lawFirms={filteredLawFirms}
+        selectedProject={selectedProject}
+        selectedStakeholder={selectedStakeholder}
+        stakeholderDetailOrigin={stakeholderDetailOrigin}
+        originLawFirm={originLawFirm}
+        selectedLawFirm={selectedLawFirm}
+        user={user}
+        onBackToWorkspace={handleBackToWorkspace}
+        onCreateStakeholder={handleCreateStakeholder}
+        onUpdateStakeholder={handleUpdateStakeholder}
+        onDeleteStakeholder={handleDeleteStakeholder}
+        onSelectStakeholder={handleSelectStakeholder}
+        onSelectStakeholderFromLawFirm={handleSelectStakeholderFromLawFirm}
+        onStakeholderBack={handleStakeholderBack}
+        onCreateUser={handleCreateUser}
+        onUpdateWorkspaceUser={handleUpdateWorkspaceUser}
+        onUpdateWorkspaceUserRole={handleUpdateWorkspaceUserRole}
+        onRemoveUser={handleRemoveUser}
+        onCreateUserRole={handleCreateUserRole}
+        onUpdateUserRoleDefinition={handleUpdateUserRoleDefinition}
+        onDeleteUserRole={handleDeleteUserRole}
+        onNavigateToStakeholdersWithFilter={handleNavigateToStakeholdersWithFilter}
+        onCreatePlatform={handleCreatePlatform}
+        onUpdatePlatform={handleUpdatePlatform}
+        onDeletePlatform={handleDeletePlatform}
+        onCreateLawFirm={handleCreateLawFirm}
+        onUpdateLawFirm={handleUpdateLawFirm}
+        onDeleteLawFirm={handleDeleteLawFirm}
+        onImportLawFirmsCSV={handleImportLawFirmsCSV}
+        onDeleteAllLawFirms={handleDeleteAllLawFirms}
+        onImportStakeholdersCSV={handleImportStakeholdersCSV}
+        onBackFromLawFirm={handleBackFromLawFirm}
+        onCreateWorkspace={handleCreateWorkspace}
+        onSelectWorkspace={handleSelectWorkspace}
+        onSignOut={onSignOut}
+      />
+    </>
   )
 }

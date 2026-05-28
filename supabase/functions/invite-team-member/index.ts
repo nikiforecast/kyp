@@ -12,16 +12,36 @@ interface InviteRequest {
   role: 'admin' | 'member'
   fullName?: string
   team?: 'Design' | 'Product' | 'Engineering' | 'Other'
+  workspaceId: string
+}
+
+function isPlatformAdmin(user: { app_metadata?: Record<string, unknown> }): boolean {
+  return user.app_metadata?.is_admin === true
+}
+
+async function isWorkspaceAdmin(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  workspaceId: string,
+  userId: string
+): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from('workspace_users')
+    .select('role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .maybeSingle()
+
+  if (error || !data) return false
+  return data.role === 'owner' || data.role === 'admin'
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Initialize Supabase client with service role key for admin operations
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -33,101 +53,106 @@ serve(async (req) => {
       }
     )
 
-    // Parse request body
-    const { email, role, fullName, team }: InviteRequest = await req.json()
+    const { email, role, fullName, team, workspaceId }: InviteRequest = await req.json()
 
-    if (!email || !role) {
+    if (!email || !role || !workspaceId) {
       return new Response(
-        JSON.stringify({ error: 'Email and role are required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: 'Email, role, and workspaceId are required' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return new Response(
         JSON.stringify({ error: 'Invalid email format' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Validate role
     if (!['admin', 'member'].includes(role)) {
       return new Response(
         JSON.stringify({ error: 'Role must be either "admin" or "member"' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Validate team if provided
     if (team && !['Design', 'Product', 'Engineering', 'Other'].includes(team)) {
       return new Response(
         JSON.stringify({ error: 'Team must be one of: Design, Product, Engineering, Other' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Get the current user from the request
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Authorization header required' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Verify the current user's session
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
-    
+
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid or expired token' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Get the workspace (assuming single workspace for now)
-    const { data: workspaces, error: workspaceError } = await supabaseAdmin
+    const callerIsPlatformAdmin = isPlatformAdmin(user)
+    const callerIsWorkspaceAdmin = await isWorkspaceAdmin(supabaseAdmin, workspaceId, user.id)
+
+    if (!callerIsPlatformAdmin && !callerIsWorkspaceAdmin) {
+      return new Response(
+        JSON.stringify({ error: 'You do not have permission to invite users to this workspace' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    const { data: workspace, error: workspaceError } = await supabaseAdmin
       .from('workspaces')
       .select('id')
-      .limit(1)
-      .single()
+      .eq('id', workspaceId)
+      .maybeSingle()
 
-    if (workspaceError || !workspaces) {
+    if (workspaceError || !workspace) {
       return new Response(
-        JSON.stringify({ error: 'No workspace found' }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: 'Workspace not found' }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Check if user already exists in workspace
     const { data: existingUser, error: checkError } = await supabaseAdmin
       .from('workspace_users')
       .select('id, status')
-      .eq('workspace_id', workspaces.id)
+      .eq('workspace_id', workspaceId)
       .eq('user_email', email)
       .maybeSingle()
 
@@ -135,9 +160,9 @@ serve(async (req) => {
       console.error('Error checking existing user:', checkError)
       return new Response(
         JSON.stringify({ error: 'Database error while checking existing user' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
@@ -145,20 +170,17 @@ serve(async (req) => {
     if (existingUser) {
       return new Response(
         JSON.stringify({ error: 'User already exists in workspace' }),
-        { 
-          status: 409, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Invite user via Supabase Auth
-    // Note: Since we use Google OAuth only, users will sign in with Google and be auto-added to workspace
-    // The redirectTo is set to home page where they can sign in with Google
-    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+    const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${req.headers.get('origin') || 'http://localhost:5173'}/`,
       data: {
-        workspace_id: workspaces.id,
+        workspace_id: workspaceId,
         role: role
       }
     })
@@ -167,18 +189,17 @@ serve(async (req) => {
       console.error('Error inviting user:', inviteError)
       return new Response(
         JSON.stringify({ error: `Failed to send invitation: ${inviteError.message}` }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
-    // Create workspace user entry
     const { data: workspaceUser, error: workspaceUserError } = await supabaseAdmin
       .from('workspace_users')
       .insert([{
-        workspace_id: workspaces.id,
+        workspace_id: workspaceId,
         user_email: email,
         full_name: fullName || null,
         team: team || null,
@@ -193,22 +214,22 @@ serve(async (req) => {
       console.error('Error creating workspace user:', workspaceUserError)
       return new Response(
         JSON.stringify({ error: 'Failed to create workspace user entry' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         user: workspaceUser,
-        message: `Invitation sent to ${email}` 
+        message: `Invitation sent to ${email}`
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
 
@@ -216,9 +237,9 @@ serve(async (req) => {
     console.error('Unexpected error:', error)
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   }

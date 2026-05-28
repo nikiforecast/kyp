@@ -12,6 +12,7 @@ import type { User } from '@supabase/supabase-js'
 import type {
   Project,
   Stakeholder,
+  Workspace,
   WorkspaceUser,
   UserRole,
   Platform,
@@ -23,6 +24,8 @@ interface MainContentRendererProps {
   loading: boolean
   loadingBackgroundData: boolean
   workspaceId: string
+  workspaces: Workspace[]
+  isPlatformAdmin: boolean
   stakeholders: Stakeholder[]
   workspaceUsers: WorkspaceUser[]
   userRoles: UserRole[]
@@ -59,6 +62,8 @@ interface MainContentRendererProps {
   onDeleteAllLawFirms: () => Promise<void>
   onImportStakeholdersCSV: (csvData: string) => Promise<{ success: number, errors: string[] }>
   onBackFromLawFirm: () => void
+  onCreateWorkspace: (name: string) => Promise<{ workspace: Workspace | null; error: string | null }>
+  onSelectWorkspace: (workspaceId: string) => void
   onSignOut: () => void
 }
 
@@ -67,6 +72,8 @@ export function MainContentRenderer({
   loading,
   loadingBackgroundData,
   workspaceId,
+  workspaces,
+  isPlatformAdmin,
   stakeholders,
   workspaceUsers,
   userRoles,
@@ -103,6 +110,8 @@ export function MainContentRenderer({
   onDeleteAllLawFirms,
   onImportStakeholdersCSV,
   onBackFromLawFirm,
+  onCreateWorkspace,
+  onSelectWorkspace,
   onSignOut,
 }: MainContentRendererProps) {
   if (loading) {
@@ -188,10 +197,14 @@ export function MainContentRenderer({
       return (
         <SettingsManager
           workspaceId={workspaceId}
+          workspaces={workspaces}
+          isPlatformAdmin={isPlatformAdmin}
           workspaceUsers={workspaceUsers}
           userRoles={userRoles}
           platforms={platforms}
           stakeholders={stakeholders}
+          onCreateWorkspace={onCreateWorkspace}
+          onSelectWorkspace={onSelectWorkspace}
           onCreateUser={onCreateUser}
           onUpdateWorkspaceUser={onUpdateWorkspaceUser}
           onUpdateWorkspaceUserRole={onUpdateWorkspaceUserRole}

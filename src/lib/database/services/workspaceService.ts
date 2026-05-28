@@ -1,6 +1,37 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
 import type { Workspace, WorkspaceUser } from '../../supabase'
 
+export const createWorkspace = async (
+  name: string
+): Promise<{ workspace: Workspace | null; error: string | null }> => {
+  if (!isSupabaseConfigured || !supabase) {
+    return { workspace: null, error: 'Supabase is not configured' }
+  }
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { workspace: null, error: 'Not authenticated' }
+    }
+
+    const { data, error } = await supabase
+      .from('workspaces')
+      .insert([{ name: name.trim(), created_by: user.id }])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating workspace:', error)
+      return { workspace: null, error: error.message || 'Failed to create workspace' }
+    }
+
+    return { workspace: data, error: null }
+  } catch (error) {
+    console.error('Error creating workspace:', error)
+    return { workspace: null, error: 'Failed to create workspace' }
+  }
+}
+
 // Workspace functions
 export const getWorkspaces = async (): Promise<Workspace[]> => {
   if (!isSupabaseConfigured || !supabase) {
@@ -104,10 +135,11 @@ export const getWorkspaceUsers = async (): Promise<WorkspaceUser[]> => {
 }
 
 export const createUser = async (
-  email: string, 
-  role: 'admin' | 'member', 
-  fullName?: string, 
-  team?: 'Design' | 'Product' | 'Engineering' | 'Other'
+  email: string,
+  role: 'admin' | 'member',
+  fullName?: string,
+  team?: 'Design' | 'Product' | 'Engineering' | 'Other',
+  workspaceId?: string
 ): Promise<{ user: WorkspaceUser | null, error: string | null }> => {
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
@@ -151,9 +183,13 @@ export const createUser = async (
       return { user: null, error: 'Not authenticated' }
     }
 
+    if (!workspaceId) {
+      return { user: null, error: 'No workspace selected' }
+    }
+
     // Call the Edge Function to invite the user
     const { data, error } = await supabase.functions.invoke('invite-team-member', {
-      body: { email, role, fullName, team },
+      body: { email, role, fullName, team, workspaceId },
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
@@ -273,7 +309,7 @@ export const removeUser = async (userId: string): Promise<boolean> => {
   }
 }
 
-export const getCurrentUserRole = async (): Promise<string | null> => {
+export const getCurrentUserRole = async (workspaceId?: string): Promise<string | null> => {
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback - return 'owner' for demo
     return 'owner'
@@ -283,11 +319,17 @@ export const getCurrentUserRole = async (): Promise<string | null> => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('workspace_users')
       .select('role')
       .eq('user_id', user.id)
-      .single()
+      .eq('status', 'active')
+
+    if (workspaceId) {
+      query = query.eq('workspace_id', workspaceId)
+    }
+
+    const { data, error } = await query.maybeSingle()
 
     if (error) {
       console.error('Error getting user role:', error)

@@ -19,4 +19,9 @@ ALTER TABLE examples ALTER COLUMN short_id SET NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_examples_short_id ON examples(short_id);
 
 -- Create a unique constraint on short_id to ensure uniqueness
-ALTER TABLE examples ADD CONSTRAINT unique_examples_short_id UNIQUE (short_id);
+DO $$
+BEGIN
+  ALTER TABLE examples ADD CONSTRAINT unique_examples_short_id UNIQUE (short_id);
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

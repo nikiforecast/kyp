@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
+import { getActiveWorkspaceId } from '../../activeWorkspace'
 import type { UserRole } from '../../supabase'
 
 export const getUserRoles = async (): Promise<UserRole[]> => {
@@ -51,17 +52,22 @@ export const createUserRole = async (name: string, colour: string, icon?: string
   }
 
   try {
-    // Get the workspace (assuming single workspace for now)
-    const { data: workspaces } = await supabase
-      .from('workspaces')
-      .select('id')
-      .limit(1)
-      .single()
+    const activeWorkspaceId = getActiveWorkspaceId()
+    let workspaceId = activeWorkspaceId
+
+    if (!workspaceId) {
+      const { data: workspaces } = await supabase
+        .from('workspaces')
+        .select('id')
+        .limit(1)
+        .maybeSingle()
+      workspaceId = workspaces?.id || null
+    }
 
     const { data, error } = await supabase
       .from('user_roles')
       .insert([{
-        workspace_id: workspaces?.id || null,
+        workspace_id: workspaceId,
         name,
         colour,
         icon

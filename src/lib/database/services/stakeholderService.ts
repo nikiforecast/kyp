@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
+import { getActiveWorkspaceId } from '../../activeWorkspace'
 import type { Stakeholder } from '../../supabase'
 
 export const getStakeholders = async (): Promise<Stakeholder[]> => {
@@ -121,17 +122,22 @@ export const createStakeholder = async (
       }
     }
     
-    // Get the workspace (assuming single workspace for now)
-    const { data: workspaces } = await supabase
-      .from('workspaces')
-      .select('id')
-      .limit(1)
-      .single()
+    const activeWorkspaceId = getActiveWorkspaceId()
+    let workspaceId = activeWorkspaceId
+
+    if (!workspaceId) {
+      const { data: workspaces } = await supabase
+        .from('workspaces')
+        .select('id')
+        .limit(1)
+        .maybeSingle()
+      workspaceId = workspaces?.id || null
+    }
 
     const { data, error } = await supabase
       .from('stakeholders')
       .insert([{
-        workspace_id: workspaces?.id || null,
+        workspace_id: workspaceId,
         name,
         visitor_id: visitorId || null,
         user_role_id: userRoleId || null,

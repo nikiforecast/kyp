@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
+import { getActiveWorkspaceId } from '../../activeWorkspace'
 import type { LawFirm } from '../../supabase'
 
 export const getLawFirms = async (options?: {
@@ -209,14 +210,19 @@ export const createLawFirm = async (name: string, structure: 'centralised' | 'de
   }
 
   try {
-    // Get the workspace (assuming single workspace for now)
-    const { data: workspaces } = await supabase
-      .from('workspaces')
-      .select('id')
-      .limit(1)
-      .maybeSingle()
+    const activeWorkspaceId = getActiveWorkspaceId()
+    let workspaceId = activeWorkspaceId
 
-    if (!workspaces) {
+    if (!workspaceId) {
+      const { data: workspaces } = await supabase
+        .from('workspaces')
+        .select('id')
+        .limit(1)
+        .maybeSingle()
+      workspaceId = workspaces?.id || null
+    }
+
+    if (!workspaceId) {
       console.error('No workspace found')
       return null
     }
@@ -224,7 +230,7 @@ export const createLawFirm = async (name: string, structure: 'centralised' | 'de
     const { data, error } = await supabase
       .from('law_firms')
       .insert([{
-        workspace_id: workspaces.id,
+        workspace_id: workspaceId,
         name,
         structure,
         status,
