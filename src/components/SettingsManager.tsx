@@ -16,8 +16,8 @@ interface SettingsManagerProps {
   stakeholders: Stakeholder[]
   onCreateWorkspace: (name: string) => Promise<{ workspace: Workspace | null; error: string | null }>
   onSelectWorkspace: (workspaceId: string) => void
-  onCreateUser: (email: string, role: 'admin' | 'member', fullName?: string, team?: 'Design' | 'Product' | 'Engineering' | 'Other') => Promise<{ user: WorkspaceUser | null, error: string | null }>
-  onUpdateWorkspaceUser: (userId: string, updates: { full_name?: string; team?: 'Design' | 'Product' | 'Engineering' | 'Other' | null }) => Promise<void>
+  onCreateUser: (email: string, role: 'admin' | 'member', fullName?: string, team?: 'Design' | 'Product' | 'Engineering' | 'Other', username?: string) => Promise<{ user: WorkspaceUser | null, error: string | null }>
+  onUpdateWorkspaceUser: (userId: string, updates: { full_name?: string; team?: 'Design' | 'Product' | 'Engineering' | 'Other' | null; username?: string | null }) => Promise<{ success: boolean; error?: string }>
   onUpdateWorkspaceUserRole: (userId: string, newRole: 'admin' | 'member') => Promise<void>
   onRemoveUser: (userId: string) => Promise<void>
   onCreateUserRole: (name: string, colour: string, icon?: string) => Promise<void>

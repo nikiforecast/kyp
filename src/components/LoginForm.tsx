@@ -6,7 +6,7 @@ import { isSupabaseConfigured } from '../lib/supabase'
 type AuthView = 'sign-in' | 'sign-up' | 'forgot-password' | 'verify-email'
 
 export function LoginForm() {
-  const [email, setEmail] = useState('')
+  const [loginIdentifier, setLoginIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -30,12 +30,12 @@ export function LoginForm() {
     resetMessages()
 
     try {
-      const { error: signInError } = await signIn(email, password)
+      const { error: signInError } = await signIn(loginIdentifier, password)
 
       if (signInError) {
         setError(signInError.message)
         if ('code' in signInError && signInError.code === 'email_not_confirmed') {
-          setPendingVerificationEmail(email)
+          setPendingVerificationEmail(loginIdentifier.includes('@') ? loginIdentifier : '')
         }
       }
     } catch {
@@ -50,6 +50,12 @@ export function LoginForm() {
     setLoading(true)
     resetMessages()
 
+    if (!loginIdentifier.includes('@')) {
+      setError('Please enter your email address to create an account')
+      setLoading(false)
+      return
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match')
       setLoading(false)
@@ -63,12 +69,12 @@ export function LoginForm() {
     }
 
     try {
-      const result = await signUp(email, password)
+      const result = await signUp(loginIdentifier, password)
 
       if (result.error) {
         setError(result.error.message)
       } else if (result.needsEmailVerification) {
-        setPendingVerificationEmail(email)
+        setPendingVerificationEmail(loginIdentifier)
         setView('verify-email')
       } else {
         setSuccess('Account created successfully! You can now sign in.')
@@ -91,8 +97,14 @@ export function LoginForm() {
     setLoading(true)
     resetMessages()
 
+    if (!loginIdentifier.includes('@')) {
+      setError('Please enter your email address to reset your password')
+      setLoading(false)
+      return
+    }
+
     try {
-      const { error: resetError } = await sendPasswordResetEmail(email)
+      const { error: resetError } = await sendPasswordResetEmail(loginIdentifier)
 
       if (resetError) {
         setError(resetError.message)
@@ -235,7 +247,7 @@ export function LoginForm() {
             <div className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+            <span className="px-2 bg-white text-gray-500">Or continue with email or username</span>
           </div>
         </div>
       </div>
@@ -324,8 +336,8 @@ export function LoginForm() {
                 <input
                   id="reset-email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={loginIdentifier}
+                  onChange={(e) => setLoginIdentifier(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="you@example.com"
                   required
@@ -363,18 +375,19 @@ export function LoginForm() {
 
           <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email address
+              <label htmlFor="login-identifier" className="block text-sm font-medium text-gray-700 mb-2">
+                {isSignUp ? 'Email address' : 'Email or username'}
               </label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="login-identifier"
+                type={isSignUp ? 'email' : 'text'}
+                value={loginIdentifier}
+                onChange={(e) => setLoginIdentifier(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="you@example.com"
+                placeholder={isSignUp ? 'you@example.com' : 'you@example.com or username'}
                 required
                 disabled={loading}
+                autoComplete={isSignUp ? 'email' : 'username'}
               />
             </div>
 

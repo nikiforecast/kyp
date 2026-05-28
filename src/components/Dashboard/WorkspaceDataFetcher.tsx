@@ -360,9 +360,10 @@ export function WorkspaceDataFetcher({
     email: string,
     role: 'admin' | 'member',
     fullName?: string,
-    team?: 'Design' | 'Product' | 'Engineering' | 'Other'
+    team?: 'Design' | 'Product' | 'Engineering' | 'Other',
+    username?: string
   ) => {
-    const result = await createUser(email, role, fullName, team, activeWorkspaceId)
+    const result = await createUser(email, role, fullName, team, activeWorkspaceId, username)
     if (result.user) {
       setWorkspaceUsers([result.user, ...workspaceUsers])
     }
@@ -371,13 +372,14 @@ export function WorkspaceDataFetcher({
 
   const handleUpdateWorkspaceUser = async (
     userId: string,
-    updates: { full_name?: string; team?: 'Design' | 'Product' | 'Engineering' | 'Other' | null }
+    updates: { full_name?: string; team?: 'Design' | 'Product' | 'Engineering' | 'Other' | null; username?: string | null }
   ) => {
     const { updateWorkspaceUser } = await import('../../lib/database')
-    const success = await updateWorkspaceUser(userId, updates)
-    if (success) {
+    const result = await updateWorkspaceUser(userId, updates)
+    if (result.success) {
       setWorkspaceUsers(workspaceUsers.map(u => u.id === userId ? { ...u, ...updates } : u))
     }
+    return result
   }
 
   const handleUpdateWorkspaceUserRole = async (userId: string, newRole: 'admin' | 'member') => {

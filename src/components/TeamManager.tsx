@@ -5,9 +5,9 @@ import type { WorkspaceUser } from '../lib/supabase'
 interface TeamManagerProps {
   workspaceId: string
   workspaceUsers: WorkspaceUser[]
-  onCreateUser: (email: string, role: 'admin' | 'member', fullName?: string, team?: 'Design' | 'Product' | 'Engineering' | 'Other') => Promise<{ user: WorkspaceUser | null, error: string | null }>
+  onCreateUser: (email: string, role: 'admin' | 'member', fullName?: string, team?: 'Design' | 'Product' | 'Engineering' | 'Other', username?: string) => Promise<{ user: WorkspaceUser | null, error: string | null }>
   onUpdateUserRole: (userId: string, newRole: 'admin' | 'member') => Promise<void>
-  onUpdateWorkspaceUser: (userId: string, updates: { full_name?: string; team?: 'Design' | 'Product' | 'Engineering' | 'Other' | null }) => Promise<void>
+  onUpdateWorkspaceUser: (userId: string, updates: { full_name?: string; team?: 'Design' | 'Product' | 'Engineering' | 'Other' | null; username?: string | null }) => Promise<{ success: boolean; error?: string }>
   onRemoveUser: (userId: string) => Promise<void>
 }
 
@@ -22,6 +22,7 @@ export function TeamManager({
   const [showUserForm, setShowUserForm] = useState(false)
   const [newUser, setNewUser] = useState({ 
     email: '', 
+    username: '',
     role: 'member' as 'admin' | 'member',
     fullName: '',
     team: '' as '' | 'Design' | 'Product' | 'Engineering' | 'Other'
@@ -32,7 +33,7 @@ export function TeamManager({
   const [sortField, setSortField] = useState<'email' | 'role' | 'status' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
-  const [editingUser, setEditingUser] = useState({ fullName: '', team: '' as '' | 'Design' | 'Product' | 'Engineering' | 'Other' })
+  const [editingUser, setEditingUser] = useState({ fullName: '', username: '', team: '' as '' | 'Design' | 'Product' | 'Engineering' | 'Other' })
   const [savingEdit, setSavingEdit] = useState(false)
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null)
 
@@ -75,14 +76,15 @@ export function TeamManager({
         newUser.email, 
         newUser.role, 
         newUser.fullName || undefined,
-        newUser.team || undefined
+        newUser.team || undefined,
+        newUser.username || undefined
       )
       
       if (createError) {
         setError(createError)
       } else if (user) {
         setSuccess(`Invitation sent to ${newUser.email}`)
-        setNewUser({ email: '', role: 'member', fullName: '', team: '' })
+        setNewUser({ email: '', username: '', role: 'member', fullName: '', team: '' })
         setShowUserForm(false)
         setTimeout(() => setSuccess(null), 3000)
       }
@@ -98,6 +100,7 @@ export function TeamManager({
     setEditingUserId(user.id)
     setEditingUser({
       fullName: user.full_name || '',
+      username: user.username || '',
       team: user.team || ''
     })
   }
@@ -107,12 +110,17 @@ export function TeamManager({
     
     setSavingEdit(true)
     try {
-      await onUpdateWorkspaceUser(editingUserId, {
+      const result = await onUpdateWorkspaceUser(editingUserId, {
         full_name: editingUser.fullName.trim() || undefined,
+        username: editingUser.username.trim() || null,
         team: editingUser.team || null
       })
+      if (!result.success) {
+        setError(result.error || 'Failed to update user')
+        return
+      }
       setEditingUserId(null)
-      setEditingUser({ fullName: '', team: '' })
+      setEditingUser({ fullName: '', username: '', team: '' })
     } catch (error) {
       console.error('Error updating user:', error)
     } finally {
@@ -122,7 +130,7 @@ export function TeamManager({
 
   const handleCancelEdit = () => {
     setEditingUserId(null)
-    setEditingUser({ fullName: '', team: '' })
+    setEditingUser({ fullName: '', username: '', team: '' })
   }
 
   const handleUpdateRole = async (userId: string, newRole: 'admin' | 'member') => {
@@ -254,6 +262,20 @@ export function TeamManager({
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+              <input
+                type="text"
+                value={newUser.username}
+                onChange={(e) => setNewUser({ ...newUser, username: e.target.value.toLowerCase() })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g. jsmith"
+                disabled={creatingUser}
+                pattern="[a-z0-9_]{3,30}"
+                title="3–30 characters: lowercase letters, numbers, underscores"
+              />
+              <p className="mt-1 text-xs text-gray-500">Used to sign in instead of email (optional)</p>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Team</label>
               <select
                 value={newUser.team}
@@ -352,6 +374,14 @@ export function TeamManager({
                         placeholder="Full name"
                         disabled={savingEdit}
                       />
+                      <input
+                        type="text"
+                        value={editingUser.username}
+                        onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value.toLowerCase() })}
+                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Username"
+                        disabled={savingEdit}
+                      />
                       <div className="flex items-center gap-2">
                         <input
                           type="email"
@@ -380,6 +410,12 @@ export function TeamManager({
                       </p>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <span>{user.user_email}</span>
+                        {user.username && (
+                          <>
+                            <span>•</span>
+                            <span>@{user.username}</span>
+                          </>
+                        )}
                         {user.team && (
                           <>
                             <span>•</span>
