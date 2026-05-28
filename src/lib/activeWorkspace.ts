@@ -23,7 +23,24 @@ export function resolveActiveWorkspaceId(
   )
 
   if (stored && accessibleIds.has(stored)) {
+    const storedWorkspace = workspaces.find(w => w.id === stored)
+    const sharedWorkspace = workspaces.find(
+      w => accessibleIds.has(w.id) && w.created_by !== userId
+    )
+    const storedIsPersonal = storedWorkspace?.created_by === userId
+
+    // Prefer shared workspace over auto-created personal workspace
+    if (sharedWorkspace && storedIsPersonal && sharedWorkspace.id !== stored) {
+      setActiveWorkspaceId(sharedWorkspace.id)
+      return sharedWorkspace.id
+    }
+
     return stored
+  }
+
+  // Drop stale workspace selection (e.g. from another account on the same browser)
+  if (stored && !accessibleIds.has(stored)) {
+    localStorage.removeItem(ACTIVE_WORKSPACE_KEY)
   }
 
   // Prefer shared workspaces over personal ones (personal = created_by matches user)

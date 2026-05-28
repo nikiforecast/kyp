@@ -177,35 +177,55 @@ serve(async (req) => {
       )
     }
 
-    const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${req.headers.get('origin') || 'http://localhost:5173'}/`,
-      data: {
-        workspace_id: workspaceId,
-        role: role
-      }
-    })
+    const normalizedEmail = email.toLowerCase().trim()
 
-    if (inviteError) {
-      console.error('Error inviting user:', inviteError)
-      return new Response(
-        JSON.stringify({ error: `Failed to send invitation: ${inviteError.message}` }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    const { data: existingAuthUserRow, error: authLookupError } = await supabaseAdmin
+      .schema('auth')
+      .from('users')
+      .select('id, email')
+      .ilike('email', normalizedEmail)
+      .maybeSingle()
+
+    if (authLookupError) {
+      console.error('Error looking up auth user:', authLookupError)
+    }
+
+    const existingAuthUser = existingAuthUserRow
+      ? { id: existingAuthUserRow.id, email: existingAuthUserRow.email }
+      : null
+
+    if (!existingAuthUser) {
+      const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        redirectTo: `${req.headers.get('origin') || 'http://localhost:5173'}/`,
+        data: {
+          workspace_id: workspaceId,
+          role: role
         }
-      )
+      })
+
+      if (inviteError) {
+        console.error('Error inviting user:', inviteError)
+        return new Response(
+          JSON.stringify({ error: `Failed to send invitation: ${inviteError.message}` }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
     }
 
     const { data: workspaceUser, error: workspaceUserError } = await supabaseAdmin
       .from('workspace_users')
       .insert([{
         workspace_id: workspaceId,
+        user_id: existingAuthUser?.id ?? null,
         user_email: email,
         full_name: fullName || null,
         team: team || null,
         role: role,
         invited_by: user.id,
-        status: 'pending'
+        status: existingAuthUser ? 'active' : 'pending'
       }])
       .select()
       .single()
@@ -225,7 +245,9 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         user: workspaceUser,
-        message: `Invitation sent to ${email}`
+        message: existingAuthUser
+          ? `${email} added to workspace`
+          : `Invitation sent to ${email}`
       }),
       {
         status: 200,
