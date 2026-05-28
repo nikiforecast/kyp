@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
+import { getActiveWorkspaceId } from '../../activeWorkspace'
 import type { Platform } from '../../supabase'
 
 export const getPlatforms = async (): Promise<Platform[]> => {
@@ -65,16 +66,24 @@ export const createPlatform = async (
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('No authenticated user')
 
-    const { data: workspaces } = await supabase
-      .from('workspace_users')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
+    const activeWorkspaceId = getActiveWorkspaceId()
+    let workspaceId = activeWorkspaceId
+
+    if (!workspaceId) {
+      const { data: membership } = await supabase
+        .from('workspace_users')
+        .select('workspace_id')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle()
+      workspaceId = membership?.workspace_id || null
+    }
 
     const { data, error } = await supabase
       .from('platforms')
       .insert([{
-        workspace_id: workspaces?.workspace_id || null,
+        workspace_id: workspaceId,
         name,
         colour,
         logo

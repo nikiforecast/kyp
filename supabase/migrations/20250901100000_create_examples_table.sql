@@ -56,6 +56,7 @@ ALTER TABLE example_user_roles ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for examples table
 -- Users can view examples from projects in their workspaces
+DROP POLICY IF EXISTS "Users can view examples in their workspaces" ON examples;
 CREATE POLICY "Users can view examples in their workspaces"
   ON examples
   FOR SELECT
@@ -70,6 +71,7 @@ CREATE POLICY "Users can view examples in their workspaces"
   );
 
 -- Users can create examples in projects in their workspaces
+DROP POLICY IF EXISTS "Users can create examples in their workspaces" ON examples;
 CREATE POLICY "Users can create examples in their workspaces"
   ON examples
   FOR INSERT
@@ -85,6 +87,7 @@ CREATE POLICY "Users can create examples in their workspaces"
   );
 
 -- Users can update examples they created in their workspaces
+DROP POLICY IF EXISTS "Users can update examples they created in their workspaces" ON examples;
 CREATE POLICY "Users can update examples they created in their workspaces"
   ON examples
   FOR UPDATE
@@ -109,6 +112,7 @@ CREATE POLICY "Users can update examples they created in their workspaces"
   );
 
 -- Users can delete examples they created in their workspaces
+DROP POLICY IF EXISTS "Users can delete examples they created in their workspaces" ON examples;
 CREATE POLICY "Users can delete examples they created in their workspaces"
   ON examples
   FOR DELETE
@@ -125,6 +129,7 @@ CREATE POLICY "Users can delete examples they created in their workspaces"
 
 -- Create RLS policies for example_user_roles table
 -- Users can view example-user_role associations in their workspaces
+DROP POLICY IF EXISTS "Users can view example user role associations in their workspaces" ON example_user_roles;
 CREATE POLICY "Users can view example user role associations in their workspaces"
   ON example_user_roles
   FOR SELECT
@@ -140,6 +145,7 @@ CREATE POLICY "Users can view example user role associations in their workspaces
   );
 
 -- Users can manage example-user_role associations in their workspaces
+DROP POLICY IF EXISTS "Users can manage example user role associations in their workspaces" ON example_user_roles;
 CREATE POLICY "Users can manage example user role associations in their workspaces"
   ON example_user_roles
   FOR ALL
@@ -167,14 +173,31 @@ CREATE POLICY "Users can manage example user role associations in their workspac
 CREATE INDEX IF NOT EXISTS idx_examples_project_id ON examples(project_id);
 CREATE INDEX IF NOT EXISTS idx_examples_created_by ON examples(created_by);
 CREATE INDEX IF NOT EXISTS idx_examples_created_at ON examples(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_examples_actor ON examples(actor);
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'examples' AND column_name = 'actor'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_examples_actor ON examples(actor);
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_example_user_roles_example_id ON example_user_roles(example_id);
 CREATE INDEX IF NOT EXISTS idx_example_user_roles_user_role_id ON example_user_roles(user_role_id);
 
--- Create composite indexes for efficient queries
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'examples' AND column_name = 'actor'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_examples_project_actor ON examples(project_id, actor);
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_examples_project_created_at ON examples(project_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_examples_project_actor ON examples(project_id, actor);
 
 -- Add trigger to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_examples_updated_at()
@@ -185,6 +208,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS on_examples_updated ON examples;
 CREATE TRIGGER on_examples_updated
   BEFORE UPDATE ON examples
   FOR EACH ROW

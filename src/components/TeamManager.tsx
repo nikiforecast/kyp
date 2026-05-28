@@ -3,6 +3,7 @@ import { Users, Plus, Mail, Shield, UserCheck, Clock, Trash2, Edit, Loader2, Che
 import type { WorkspaceUser } from '../lib/supabase'
 
 interface TeamManagerProps {
+  workspaceId: string
   workspaceUsers: WorkspaceUser[]
   onCreateUser: (email: string, role: 'admin' | 'member', fullName?: string, team?: 'Design' | 'Product' | 'Engineering' | 'Other') => Promise<{ user: WorkspaceUser | null, error: string | null }>
   onUpdateUserRole: (userId: string, newRole: 'admin' | 'member') => Promise<void>
@@ -11,6 +12,7 @@ interface TeamManagerProps {
 }
 
 export function TeamManager({ 
+  workspaceId,
   workspaceUsers, 
   onCreateUser, 
   onUpdateUserRole, 
@@ -38,11 +40,11 @@ export function TeamManager({
   useEffect(() => {
     const loadCurrentUserRole = async () => {
       const { getCurrentUserRole } = await import('../lib/database')
-      const role = await getCurrentUserRole()
+      const role = await getCurrentUserRole(workspaceId)
       setCurrentUserRole(role)
     }
     loadCurrentUserRole()
-  }, [])
+  }, [workspaceId])
 
   const handleSort = (field: 'email' | 'role' | 'status') => {
     if (sortField === field) {
@@ -203,7 +205,8 @@ export function TeamManager({
         </div>
         <button
           onClick={() => setShowUserForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+          disabled={!canEditUsers}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus size={20} />
           Invite Member
@@ -428,7 +431,7 @@ export function TeamManager({
                     </button>
                   )
                 )}
-                {user.role !== 'owner' && (
+                {user.role !== 'owner' && canEditUsers && (
                   <>
                     <select
                       value={user.role}

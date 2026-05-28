@@ -1,16 +1,21 @@
 import React, { useState } from 'react'
-import { Settings, UserCheck, UserPlus, Server } from 'lucide-react'
+import { Settings, UserCheck, UserPlus, Server, Building2 } from 'lucide-react'
 import { UserRoleManager } from './UserRoleManager'
 import { PlatformManager } from './PlatformManager'
 import { TeamManager } from './TeamManager'
-import type { WorkspaceUser, UserRole, Platform, Stakeholder } from '../lib/supabase'
+import { WorkspaceManager } from './WorkspaceManager'
+import type { Workspace, WorkspaceUser, UserRole, Platform, Stakeholder } from '../lib/supabase'
 
 interface SettingsManagerProps {
   workspaceId: string
+  workspaces: Workspace[]
+  isPlatformAdmin: boolean
   workspaceUsers: WorkspaceUser[]
   userRoles: UserRole[]
   platforms: Platform[]
   stakeholders: Stakeholder[]
+  onCreateWorkspace: (name: string) => Promise<{ workspace: Workspace | null; error: string | null }>
+  onSelectWorkspace: (workspaceId: string) => void
   onCreateUser: (email: string, role: 'admin' | 'member', fullName?: string, team?: 'Design' | 'Product' | 'Engineering' | 'Other') => Promise<{ user: WorkspaceUser | null, error: string | null }>
   onUpdateWorkspaceUser: (userId: string, updates: { full_name?: string; team?: 'Design' | 'Product' | 'Engineering' | 'Other' | null }) => Promise<void>
   onUpdateWorkspaceUserRole: (userId: string, newRole: 'admin' | 'member') => Promise<void>
@@ -25,10 +30,15 @@ interface SettingsManagerProps {
 }
 
 export function SettingsManager({
+  workspaceId,
+  workspaces,
+  isPlatformAdmin,
   workspaceUsers,
   userRoles,
   platforms,
   stakeholders,
+  onCreateWorkspace,
+  onSelectWorkspace,
   onCreateUser,
   onUpdateWorkspaceUser,
   onUpdateWorkspaceUserRole,
@@ -41,9 +51,10 @@ export function SettingsManager({
   onUpdatePlatform,
   onDeletePlatform,
 }: SettingsManagerProps) {
-  const [currentView, setCurrentView] = useState('user-roles')
+  const [currentView, setCurrentView] = useState(isPlatformAdmin ? 'workspaces' : 'user-roles')
 
   const menuItems = [
+    ...(isPlatformAdmin ? [{ id: 'workspaces', label: 'Workspaces', icon: Building2 }] : []),
     { id: 'user-roles', label: 'User Roles', icon: UserCheck },
     { id: 'platforms', label: 'Platforms', icon: Server },
     { id: 'team', label: 'JS Team', icon: UserPlus },
@@ -51,6 +62,16 @@ export function SettingsManager({
 
   const renderContent = () => {
     switch (currentView) {
+      case 'workspaces':
+        return (
+          <WorkspaceManager
+            workspaces={workspaces}
+            activeWorkspaceId={workspaceId}
+            isPlatformAdmin={isPlatformAdmin}
+            onCreateWorkspace={onCreateWorkspace}
+            onSelectWorkspace={onSelectWorkspace}
+          />
+        )
       case 'user-roles':
         return (
           <UserRoleManager
@@ -74,6 +95,7 @@ export function SettingsManager({
       case 'team':
         return (
           <TeamManager
+            workspaceId={workspaceId}
             workspaceUsers={workspaceUsers}
             onCreateUser={onCreateUser}
             onUpdateUserRole={onUpdateWorkspaceUserRole}
