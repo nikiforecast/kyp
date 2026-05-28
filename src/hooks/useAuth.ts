@@ -35,7 +35,7 @@ function formatAuthErrorMessage(message: string, fallback: string): string {
   }
 
   if (lower.includes('invalid login credentials')) {
-    return 'Invalid email or password.'
+    return 'Invalid username/email or password.'
   }
 
   if (lower.includes('email not confirmed')) {
@@ -76,7 +76,7 @@ interface AuthContextValue {
   user: User | null
   loading: boolean
   needsPasswordReset: boolean
-  signIn: (email: string, password: string) => Promise<{ error: { message: string; code?: string } | null }>
+  signIn: (identifier: string, password: string) => Promise<{ error: { message: string; code?: string } | null }>
   signUp: (
     email: string,
     password: string
@@ -187,17 +187,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription?.unsubscribe()
   }, [])
 
-  const signIn = async (email: string, password: string) => {
-    if (!isEmailAllowed(email)) {
-      return { error: { message: domainRestrictionMessage ?? 'This email address is not allowed.' } }
-    }
-
+  const signIn = async (identifier: string, password: string) => {
     if (!isSupabaseConfigured || !supabase) {
       return { error: { message: 'Supabase is not configured' } }
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { resolveLoginEmail } = await import('../lib/database/services/profileService')
+      const resolvedEmail = (await resolveLoginEmail(identifier)) ?? identifier.trim()
+
+      if (!isEmailAllowed(resolvedEmail)) {
+        return { error: { message: domainRestrictionMessage ?? 'This email address is not allowed.' } }
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: resolvedEmail,
+        password,
+      })
 
       if (error) {
         if (error.message.toLowerCase().includes('email not confirmed')) {
@@ -208,7 +214,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             },
           }
         }
-        return { error: { message: formatAuthErrorMessage(error.message, 'Failed to sign in. Please try again.') } }
+        return {
+          error: {
+            message: formatAuthErrorMessage(error.message, 'Invalid username/email or password.'),
+          },
+        }
       }
 
       if (data.user && !isEmailAllowed(data.user.email)) {

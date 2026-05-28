@@ -1,5 +1,7 @@
 import { supabase, isSupabaseConfigured } from '../../supabase'
 import type { Workspace, WorkspaceUser } from '../../supabase'
+import { normalizeUsername, validateUsername } from '../../username'
+import { setUserUsername } from './profileService'
 
 export const activatePendingWorkspaceInvites = async (): Promise<void> => {
   if (!isSupabaseConfigured || !supabase) return
@@ -151,7 +153,8 @@ export const createUser = async (
   role: 'admin' | 'member',
   fullName?: string,
   team?: 'Design' | 'Product' | 'Engineering' | 'Other',
-  workspaceId?: string
+  workspaceId?: string,
+  username?: string
 ): Promise<{ user: WorkspaceUser | null, error: string | null }> => {
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
@@ -201,7 +204,7 @@ export const createUser = async (
 
     // Call the Edge Function to invite the user
     const { data, error } = await supabase.functions.invoke('invite-team-member', {
-      body: { email, role, fullName, team, workspaceId },
+      body: { email, role, fullName, team, workspaceId, username },
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
@@ -224,40 +227,79 @@ export const createUser = async (
 }
 
 export const updateWorkspaceUser = async (
-  userId: string, 
-  updates: { 
+  userId: string,
+  updates: {
     full_name?: string
     team?: 'Design' | 'Product' | 'Engineering' | 'Other' | null
+    username?: string | null
   }
-): Promise<boolean> => {
+): Promise<{ success: boolean; error?: string }> => {
   if (!isSupabaseConfigured || !supabase) {
     // Local storage fallback
     try {
       const workspaceUsers = JSON.parse(localStorage.getItem('kyp_workspace_users') || '[]')
-      const updatedUsers = workspaceUsers.map((user: WorkspaceUser) => 
-        user.id === userId 
+      const updatedUsers = workspaceUsers.map((user: WorkspaceUser) =>
+        user.id === userId
           ? { ...user, ...updates, updated_at: new Date().toISOString() }
           : user
       )
       localStorage.setItem('kyp_workspace_users', JSON.stringify(updatedUsers))
-      return true
+      return { success: true }
     } catch (error) {
       console.error('Error updating workspace user locally:', error)
-      return false
+      return { success: false, error: 'Failed to update user' }
     }
   }
 
   try {
-    const { error } = await supabase
-      .from('workspace_users')
-      .update(updates)
-      .eq('id', userId)
+    const { username, ...profileUpdates } = updates
 
-    if (error) throw error
-    return true
+    if (username) {
+      const validationError = validateUsername(username)
+      if (validationError) {
+        return { success: false, error: validationError }
+      }
+    }
+
+    if (Object.keys(profileUpdates).length > 0) {
+      const { error } = await supabase
+        .from('workspace_users')
+        .update(profileUpdates)
+        .eq('id', userId)
+
+      if (error) throw error
+    }
+
+    if (username !== undefined) {
+      const { data: row, error: rowError } = await supabase
+        .from('workspace_users')
+        .select('user_id')
+        .eq('id', userId)
+        .single()
+
+      if (rowError) throw rowError
+
+      const normalized = username ? normalizeUsername(username) : null
+
+      if (row.user_id) {
+        const result = await setUserUsername(row.user_id, normalized)
+        if (result.error) {
+          return { success: false, error: result.error }
+        }
+      } else {
+        const { error } = await supabase
+          .from('workspace_users')
+          .update({ username: normalized })
+          .eq('id', userId)
+
+        if (error) throw error
+      }
+    }
+
+    return { success: true }
   } catch (error) {
     console.error('Error updating workspace user:', error)
-    return false
+    return { success: false, error: 'Failed to update user' }
   }
 }
 

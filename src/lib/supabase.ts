@@ -173,6 +173,7 @@ export interface WorkspaceUser {
   status: 'pending' | 'active'
   full_name?: string | null
   team?: 'Design' | 'Product' | 'Engineering' | 'Other' | null
+  username?: string | null
   created_at: string
   updated_at: string
 }

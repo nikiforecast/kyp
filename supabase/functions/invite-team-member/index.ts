@@ -13,6 +13,19 @@ interface InviteRequest {
   fullName?: string
   team?: 'Design' | 'Product' | 'Engineering' | 'Other'
   workspaceId: string
+  username?: string
+}
+
+function normalizeUsername(username: string): string {
+  return username.trim().toLowerCase()
+}
+
+function validateUsername(username: string): string | null {
+  const normalized = normalizeUsername(username)
+  if (!/^[a-z0-9_]{3,30}$/.test(normalized)) {
+    return 'Username must be 3–30 characters: lowercase letters, numbers, and underscores only'
+  }
+  return null
 }
 
 function isPlatformAdmin(user: { app_metadata?: Record<string, unknown> }): boolean {
@@ -53,7 +66,7 @@ serve(async (req) => {
       }
     )
 
-    const { email, role, fullName, team, workspaceId }: InviteRequest = await req.json()
+    const { email, role, fullName, team, workspaceId, username }: InviteRequest = await req.json()
 
     if (!email || !role || !workspaceId) {
       return new Response(
@@ -94,6 +107,21 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
+    }
+
+    let normalizedUsername: string | null = null
+    if (username?.trim()) {
+      const usernameError = validateUsername(username)
+      if (usernameError) {
+        return new Response(
+          JSON.stringify({ error: usernameError }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+      normalizedUsername = normalizeUsername(username)
     }
 
     const authHeader = req.headers.get('Authorization')
@@ -215,6 +243,24 @@ serve(async (req) => {
       }
     }
 
+    if (normalizedUsername) {
+      const { data: existingUsername } = await supabaseAdmin
+        .from('profiles')
+        .select('user_id')
+        .eq('username', normalizedUsername)
+        .maybeSingle()
+
+      if (existingUsername && existingUsername.user_id !== existingAuthUser?.id) {
+        return new Response(
+          JSON.stringify({ error: 'Username is already taken' }),
+          {
+            status: 409,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+    }
+
     const { data: workspaceUser, error: workspaceUserError } = await supabaseAdmin
       .from('workspace_users')
       .insert([{
@@ -224,6 +270,7 @@ serve(async (req) => {
         full_name: fullName || null,
         team: team || null,
         role: role,
+        username: normalizedUsername,
         invited_by: user.id,
         status: existingAuthUser ? 'active' : 'pending'
       }])
@@ -232,13 +279,30 @@ serve(async (req) => {
 
     if (workspaceUserError) {
       console.error('Error creating workspace user:', workspaceUserError)
+      const message = workspaceUserError.message.includes('profiles_username')
+        ? 'Username is already taken'
+        : 'Failed to create workspace user entry'
       return new Response(
-        JSON.stringify({ error: 'Failed to create workspace user entry' }),
+        JSON.stringify({ error: message }),
         {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
+    }
+
+    if (existingAuthUser?.id && normalizedUsername) {
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .upsert({
+          user_id: existingAuthUser.id,
+          username: normalizedUsername,
+          updated_at: new Date().toISOString(),
+        })
+
+      if (profileError) {
+        console.error('Error setting username:', profileError)
+      }
     }
 
     return new Response(
